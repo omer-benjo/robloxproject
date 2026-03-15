@@ -24,12 +24,6 @@ Instance.new("UICorner",f).CornerRadius=UDim.new(0,12)
 local s=Instance.new("UIStroke",f)
 s.Color=Color3.fromRGB(220,60,60)
 
-local gr=Instance.new("UIGradient",f)
-gr.Color=ColorSequence.new{
-	ColorSequenceKeypoint.new(0,Color3.fromRGB(255,150,150)),
-	ColorSequenceKeypoint.new(1,Color3.fromRGB(255,120,120))
-}
-
 -- TITLE
 local t=Instance.new("TextLabel",f)
 t.Size=UDim2.new(1,0,0,35)
@@ -76,79 +70,6 @@ b.TextSize=16
 b.BackgroundColor3=Color3.fromRGB(255,200,200)
 Instance.new("UICorner",b)
 
--- DROPDOWN BUTTON
-local dp=Instance.new("TextButton",f)
-dp.Size=UDim2.new(0,300,0,35)
-dp.Position=UDim2.new(.5,-150,0,120)
-dp.Text="Select Player ▼"
-dp.Font=Enum.Font.Gotham
-dp.TextSize=14
-dp.BackgroundColor3=Color3.fromRGB(255,200,200)
-Instance.new("UICorner",dp)
-
--- DROPDOWN LIST
-local list=Instance.new("Frame",f)
-list.Size=UDim2.new(0,300,0,0)
-list.Position=UDim2.new(.5,-150,0,155)
-list.BackgroundColor3=Color3.fromRGB(255,210,210)
-list.ClipsDescendants=true
-Instance.new("UICorner",list)
-
-local layout=Instance.new("UIListLayout")
-layout.Parent=list
-layout.Padding=UDim.new(0,2)
-
-local open=false
-
--- UPDATE PLAYER LIST
-local function refreshPlayers()
-
-	for _,v in pairs(list:GetChildren()) do
-		if v:IsA("TextButton") then
-			v:Destroy()
-		end
-	end
-	
-	local count=0
-
-	for _,plr in pairs(P:GetPlayers()) do
-		if plr~=p then
-			count=count+1
-
-			local btn=Instance.new("TextButton")
-			btn.Parent=list
-			btn.Size=UDim2.new(1,0,0,30)
-			btn.Text=plr.Name
-			btn.Font=Enum.Font.Gotham
-			btn.TextSize=14
-			btn.BackgroundColor3=Color3.fromRGB(255,200,200)
-			Instance.new("UICorner",btn)
-
-			btn.MouseButton1Click:Connect(function()
-				b.Text=plr.Name
-				open=false
-				list:TweenSize(UDim2.new(0,300,0,0),"Out","Quad",0.2,true)
-			end)
-		end
-	end
-
-	list.Size=UDim2.new(0,300,0,count*32)
-end
-
-dp.MouseButton1Click:Connect(function()
-	open=not open
-
-	if open then
-		refreshPlayers()
-		list:TweenSize(UDim2.new(0,300,0,#P:GetPlayers()*32),"Out","Quad",0.2,true)
-	else
-		list:TweenSize(UDim2.new(0,300,0,0),"Out","Quad",0.2,true)
-	end
-end)
-
-P.PlayerAdded:Connect(refreshPlayers)
-P.PlayerRemoving:Connect(refreshPlayers)
-
 -- TELEPORT ONCE
 local tp=Instance.new("TextButton",f)
 tp.Size=UDim2.new(0,300,0,45)
@@ -179,29 +100,171 @@ pr.TextSize=16
 pr.BackgroundColor3=Color3.fromRGB(255,200,200)
 Instance.new("UICorner",pr)
 
+-- DROPDOWN BUTTON
+local dp=Instance.new("TextButton",f)
+dp.Size=UDim2.new(0,300,0,35)
+dp.Position=UDim2.new(.5,-150,0,120)
+dp.Text="Choose Player ▼"
+dp.Font=Enum.Font.Gotham
+dp.TextSize=14
+dp.BackgroundColor3=Color3.fromRGB(255,200,200)
+Instance.new("UICorner",dp)
+
+-- LIST
+local list=Instance.new("Frame",f)
+list.Size=UDim2.new(0,300,0,0)
+list.Position=UDim2.new(.5,-150,0,155)
+list.BackgroundColor3=Color3.fromRGB(255,210,210)
+list.ClipsDescendants=true
+Instance.new("UICorner",list)
+
+local layout=Instance.new("UIListLayout")
+layout.Parent=list
+layout.Padding=UDim.new(0,2)
+
+local open=false
+
+local function hideButtons()
+	tp.Visible=false
+	it.Visible=false
+	pr.Visible=false
+end
+
+local function showButtons()
+	tp.Visible=true
+	it.Visible=true
+	pr.Visible=true
+end
+
+local function refreshPlayers()
+
+	for _,v in pairs(list:GetChildren()) do
+		if v:IsA("TextButton") then
+			v:Destroy()
+		end
+	end
+
+	local count=0
+
+	for _,plr in pairs(P:GetPlayers()) do
+		if plr~=p then
+
+			count+=1
+
+			local btn=Instance.new("TextButton")
+			btn.Parent=list
+			btn.Size=UDim2.new(1,0,0,30)
+			btn.Text=plr.Name
+			btn.Font=Enum.Font.Gotham
+			btn.TextSize=14
+			btn.BackgroundColor3=Color3.fromRGB(255,200,200)
+			Instance.new("UICorner",btn)
+
+			btn.MouseButton1Click:Connect(function()
+
+				b.Text=plr.Name
+
+				open=false
+				showButtons()
+
+				list:TweenSize(
+					UDim2.new(0,300,0,0),
+					"Out",
+					"Quad",
+					0.2,
+					true
+				)
+
+			end)
+
+		end
+	end
+
+	list.Size=UDim2.new(0,300,0,count*32)
+
+end
+
+dp.MouseButton1Click:Connect(function()
+
+	open=not open
+
+	if open then
+
+		hideButtons()
+
+		refreshPlayers()
+
+		list:TweenSize(
+			UDim2.new(0,300,0,#P:GetPlayers()*32),
+			"Out",
+			"Quad",
+			0.2,
+			true
+		)
+
+	else
+
+		showButtons()
+
+		list:TweenSize(
+			UDim2.new(0,300,0,0),
+			"Out",
+			"Quad",
+			0.2,
+			true
+		)
+
+	end
+
+end)
+
+P.PlayerAdded:Connect(refreshPlayers)
+P.PlayerRemoving:Connect(refreshPlayers)
+
 -- DRAG
 local function drag(o)
-	local d,s,p
+
+	local d
+	local s
+	local p0
+
 	o.InputBegan:Connect(function(i)
+
 		if i.UserInputType==Enum.UserInputType.MouseButton1 then
+
 			d=true
 			s=i.Position
-			p=o.Position
+			p0=o.Position
+
 		end
+
 	end)
 
 	o.InputEnded:Connect(function(i)
+
 		if i.UserInputType==Enum.UserInputType.MouseButton1 then
 			d=false
 		end
+
 	end)
 
 	U.InputChanged:Connect(function(i)
+
 		if d and i.UserInputType==Enum.UserInputType.MouseMovement then
+
 			local v=i.Position-s
-			o.Position=UDim2.new(p.X.Scale,p.X.Offset+v.X,p.Y.Scale,p.Y.Offset+v.Y)
+
+			o.Position=UDim2.new(
+				p0.X.Scale,
+				p0.X.Offset+v.X,
+				p0.Y.Scale,
+				p0.Y.Offset+v.Y
+			)
+
 		end
+
 	end)
+
 end
 
 drag(f)
@@ -218,83 +281,131 @@ logo.MouseButton1Click:Connect(function()
 	logo.Visible=false
 end)
 
--- F5 TOGGLE
+-- F5
 U.InputBegan:Connect(function(i,gp)
+
 	if gp then return end
+
 	if i.KeyCode==Enum.KeyCode.F5 then
+
 		local v=not f.Visible
 		f.Visible=v
 		logo.Visible=not v
+
 	end
+
 end)
 
 -- FIND TARGET
 local function gt(n)
+
 	for _,x in pairs(P:GetPlayers()) do
+
 		if x.Name==n then
 			return x
 		end
+
 	end
+
 end
 
 -- TELEPORT ONCE
 tp.MouseButton1Click:Connect(function()
+
 	local t=gt(b.Text)
+
 	if t and t.Character then
+
 		local tr=t.Character:FindFirstChild("HumanoidRootPart")
+
 		if tr then
 			r.CFrame=tr.CFrame*CFrame.new(0,0,-2)
 		end
+
 	end
+
 end)
 
 -- INFINITE TELEPORT
 it.MouseButton1Click:Connect(function()
+
 	inf=not inf
+
 	it.Text=inf and "Infinite Teleport: ON" or "Infinite Teleport: OFF"
 
 	if inf then
+
 		task.spawn(function()
+
 			while inf do
+
 				local t=gt(b.Text)
+
 				if t and t.Character then
+
 					local tr=t.Character:FindFirstChild("HumanoidRootPart")
+
 					if tr then
 						r.CFrame=tr.CFrame*CFrame.new(0,0,-2)
 					end
+
 				end
+
 				task.wait(.01)
+
 			end
+
 		end)
+
 	end
+
 end)
 
 -- PROTECTION
 pr.MouseButton1Click:Connect(function()
+
 	prot=not prot
+
 	pr.Text=prot and "Protection: ON" or "Protection: OFF"
+
 end)
 
 -- PROTECTION LOOP
 task.spawn(function()
+
 	while true do
+
 		if prot then
+
 			local m=(r.Position-z).Magnitude
+
 			if m<=rad then
+
 				if not fr then
+
 					fr=true
 					r.Anchored=true
 					h.WalkSpeed=0
 					r.CFrame=r.CFrame-Vector3.new(0,200,0)
+
 				end
+
 			else
+
 				if fr then
+
 					fr=false
 					r.Anchored=false
 					h.WalkSpeed=16
+
 				end
+
 			end
+
 		end
+
 		task.wait(.02)
+
 	end
+
 end)
