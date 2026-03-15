@@ -1,0 +1,229 @@
+local P=game:GetService("Players")
+local U=game:GetService("UserInputService")
+local p=P.LocalPlayer
+local c=p.Character or p.CharacterAdded:Wait()
+local r=c:WaitForChild("HumanoidRootPart")
+local h=c:WaitForChild("Humanoid")
+
+local z=Vector3.new(-2543.30,14.81,4030.32)
+local rad=50
+local prot=false
+local fr=false
+local inf=false
+
+local g=Instance.new("ScreenGui",p.PlayerGui)
+g.ResetOnSpawn=false
+
+-- FRAME
+local f=Instance.new("Frame",g)
+f.Size=UDim2.new(0,420,0,330)
+f.Position=UDim2.new(.5,-210,.5,-165)
+f.BackgroundColor3=Color3.fromRGB(255,170,170)
+Instance.new("UICorner",f).CornerRadius=UDim.new(0,12)
+
+local s=Instance.new("UIStroke",f)
+s.Color=Color3.fromRGB(220,60,60)
+
+local gr=Instance.new("UIGradient",f)
+gr.Color=ColorSequence.new{
+ColorSequenceKeypoint.new(0,Color3.fromRGB(255,150,150)),
+ColorSequenceKeypoint.new(1,Color3.fromRGB(255,120,120))
+}
+
+-- TITLE
+local t=Instance.new("TextLabel",f)
+t.Size=UDim2.new(1,0,0,35)
+t.Position=UDim2.new(0,0,0,0)
+t.BackgroundTransparency=1
+t.Text="Control Panel"
+t.Font=Enum.Font.GothamSemibold
+t.TextSize=18
+t.TextColor3=Color3.fromRGB(30,20,20)
+
+-- SUBTITLE
+local sub=Instance.new("TextLabel",f)
+sub.Size=UDim2.new(1,0,0,15)
+sub.Position=UDim2.new(0,0,0,28)
+sub.BackgroundTransparency=1
+sub.Text="(F5 to toggle)"
+sub.Font=Enum.Font.Gotham
+sub.TextSize=12
+sub.TextColor3=Color3.fromRGB(120,120,120)
+
+-- MINIMIZE
+local min=Instance.new("TextButton",f)
+min.Size=UDim2.new(0,30,0,30)
+min.Position=UDim2.new(1,-35,0,5)
+min.Text="-"
+min.BackgroundColor3=Color3.fromRGB(255,200,200)
+Instance.new("UICorner",min)
+
+-- LOGO
+local logo=Instance.new("TextButton",g)
+logo.Size=UDim2.new(0,60,0,60)
+logo.Position=UDim2.new(.5,-30,.8,0)
+logo.Text="GUI"
+logo.Visible=false
+logo.BackgroundColor3=Color3.fromRGB(255,170,170)
+Instance.new("UICorner",logo)
+
+-- USERNAME BOX
+local b=Instance.new("TextBox",f)
+b.Size=UDim2.new(0,300,0,45)
+b.Position=UDim2.new(.5,-150,0,70)
+b.PlaceholderText="Enter Username"
+b.Font=Enum.Font.Gotham
+b.TextSize=16
+b.BackgroundColor3=Color3.fromRGB(255,200,200)
+Instance.new("UICorner",b)
+
+-- TELEPORT ONCE
+local tp=Instance.new("TextButton",f)
+tp.Size=UDim2.new(0,300,0,45)
+tp.Position=UDim2.new(.5,-150,0,125)
+tp.Text="Teleport Once"
+tp.Font=Enum.Font.Gotham
+tp.TextSize=16
+tp.BackgroundColor3=Color3.fromRGB(255,200,200)
+Instance.new("UICorner",tp)
+
+-- INFINITE TELEPORT
+local it=Instance.new("TextButton",f)
+it.Size=UDim2.new(0,300,0,45)
+it.Position=UDim2.new(.5,-150,0,180)
+it.Text="Infinite Teleport: OFF"
+it.Font=Enum.Font.Gotham
+it.TextSize=16
+it.BackgroundColor3=Color3.fromRGB(255,200,200)
+Instance.new("UICorner",it)
+
+-- PROTECTION
+local pr=Instance.new("TextButton",f)
+pr.Size=UDim2.new(0,300,0,45)
+pr.Position=UDim2.new(.5,-150,0,235)
+pr.Text="Protection: OFF"
+pr.Font=Enum.Font.Gotham
+pr.TextSize=16
+pr.BackgroundColor3=Color3.fromRGB(255,200,200)
+Instance.new("UICorner",pr)
+
+-- DRAG FUNCTION
+local function drag(o)
+local d,s,p
+o.InputBegan:Connect(function(i)
+if i.UserInputType==Enum.UserInputType.MouseButton1 then
+d=true
+s=i.Position
+p=o.Position
+end
+end)
+
+o.InputEnded:Connect(function(i)
+if i.UserInputType==Enum.UserInputType.MouseButton1 then
+d=false
+end
+end)
+
+U.InputChanged:Connect(function(i)
+if d and i.UserInputType==Enum.UserInputType.MouseMovement then
+local v=i.Position-s
+o.Position=UDim2.new(p.X.Scale,p.X.Offset+v.X,p.Y.Scale,p.Y.Offset+v.Y)
+end
+end)
+end
+
+drag(f)
+drag(logo)
+
+-- MINIMIZE BUTTON
+min.MouseButton1Click:Connect(function()
+f.Visible=false
+logo.Visible=true
+end)
+
+-- RESTORE FROM LOGO
+logo.MouseButton1Click:Connect(function()
+f.Visible=true
+logo.Visible=false
+end)
+
+-- F5 TOGGLE
+U.InputBegan:Connect(function(i,gp)
+if gp then return end
+if i.KeyCode==Enum.KeyCode.F5 then
+local v=not f.Visible
+f.Visible=v
+logo.Visible=not v
+end
+end)
+
+-- FIND TARGET
+local function gt(n)
+for _,x in pairs(P:GetPlayers()) do
+if x.Name==n then
+return x
+end
+end
+end
+
+-- TELEPORT ONCE
+tp.MouseButton1Click:Connect(function()
+local t=gt(b.Text)
+if t and t.Character then
+local tr=t.Character:FindFirstChild("HumanoidRootPart")
+if tr then
+r.CFrame=tr.CFrame*CFrame.new(0,0,-2)
+end
+end
+end)
+
+-- INFINITE TELEPORT
+it.MouseButton1Click:Connect(function()
+inf=not inf
+it.Text=inf and "Infinite Teleport: ON" or "Infinite Teleport: OFF"
+
+if inf then
+task.spawn(function()
+while inf do
+local t=gt(b.Text)
+if t and t.Character then
+local tr=t.Character:FindFirstChild("HumanoidRootPart")
+if tr then
+r.CFrame=tr.CFrame*CFrame.new(0,0,-2)
+end
+end
+task.wait(.01)
+end
+end)
+end
+end)
+
+-- PROTECTION
+pr.MouseButton1Click:Connect(function()
+prot=not prot
+pr.Text=prot and "Protection: ON" or "Protection: OFF"
+end)
+
+-- PROTECTION LOOP
+task.spawn(function()
+while true do
+if prot then
+local m=(r.Position-z).Magnitude
+if m<=rad then
+if not fr then
+fr=true
+r.Anchored=true
+h.WalkSpeed=0
+r.CFrame=r.CFrame-Vector3.new(0,200,0)
+end
+else
+if fr then
+fr=false
+r.Anchored=false
+h.WalkSpeed=16
+end
+end
+end
+task.wait(.02)
+end
+end)
