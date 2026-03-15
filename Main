@@ -163,7 +163,6 @@ local function refreshPlayers()
 			btn.MouseButton1Click:Connect(function()
 
 				b.Text=plr.Name
-
 				open=false
 				showButtons()
 
@@ -192,10 +191,8 @@ dp.MouseButton1Click:Connect(function()
 
 		hideButtons()
 
-		refreshPlayers()
-
 		list:TweenSize(
-			UDim2.new(0,300,0,#P:GetPlayers()*32),
+			UDim2.new(0,300,0,200),
 			"Out",
 			"Quad",
 			0.2,
@@ -218,8 +215,15 @@ dp.MouseButton1Click:Connect(function()
 
 end)
 
-P.PlayerAdded:Connect(refreshPlayers)
-P.PlayerRemoving:Connect(refreshPlayers)
+-- UPDATE LIST EVERY 0.5s WHILE OPEN
+task.spawn(function()
+	while true do
+		if open then
+			refreshPlayers()
+		end
+		task.wait(0.5)
+	end
+end)
 
 -- DRAG
 local function drag(o)
@@ -229,40 +233,29 @@ local function drag(o)
 	local p0
 
 	o.InputBegan:Connect(function(i)
-
 		if i.UserInputType==Enum.UserInputType.MouseButton1 then
-
 			d=true
 			s=i.Position
 			p0=o.Position
-
 		end
-
 	end)
 
 	o.InputEnded:Connect(function(i)
-
 		if i.UserInputType==Enum.UserInputType.MouseButton1 then
 			d=false
 		end
-
 	end)
 
 	U.InputChanged:Connect(function(i)
-
 		if d and i.UserInputType==Enum.UserInputType.MouseMovement then
-
 			local v=i.Position-s
-
 			o.Position=UDim2.new(
 				p0.X.Scale,
 				p0.X.Offset+v.X,
 				p0.Y.Scale,
 				p0.Y.Offset+v.Y
 			)
-
 		end
-
 	end)
 
 end
@@ -283,30 +276,21 @@ end)
 
 -- F5
 U.InputBegan:Connect(function(i,gp)
-
 	if gp then return end
-
 	if i.KeyCode==Enum.KeyCode.F5 then
-
 		local v=not f.Visible
 		f.Visible=v
 		logo.Visible=not v
-
 	end
-
 end)
 
 -- FIND TARGET
 local function gt(n)
-
 	for _,x in pairs(P:GetPlayers()) do
-
 		if x.Name==n then
 			return x
 		end
-
 	end
-
 end
 
 -- TELEPORT ONCE
@@ -315,13 +299,10 @@ tp.MouseButton1Click:Connect(function()
 	local t=gt(b.Text)
 
 	if t and t.Character then
-
 		local tr=t.Character:FindFirstChild("HumanoidRootPart")
-
 		if tr then
 			r.CFrame=tr.CFrame*CFrame.new(0,0,-2)
 		end
-
 	end
 
 end)
@@ -330,44 +311,29 @@ end)
 it.MouseButton1Click:Connect(function()
 
 	inf=not inf
-
 	it.Text=inf and "Infinite Teleport: ON" or "Infinite Teleport: OFF"
 
 	if inf then
-
 		task.spawn(function()
-
 			while inf do
-
 				local t=gt(b.Text)
-
 				if t and t.Character then
-
 					local tr=t.Character:FindFirstChild("HumanoidRootPart")
-
 					if tr then
 						r.CFrame=tr.CFrame*CFrame.new(0,0,-2)
 					end
-
 				end
-
 				task.wait(.01)
-
 			end
-
 		end)
-
 	end
 
 end)
 
 -- PROTECTION
 pr.MouseButton1Click:Connect(function()
-
 	prot=not prot
-
 	pr.Text=prot and "Protection: ON" or "Protection: OFF"
-
 end)
 
 -- PROTECTION LOOP
@@ -380,26 +346,18 @@ task.spawn(function()
 			local m=(r.Position-z).Magnitude
 
 			if m<=rad then
-
 				if not fr then
-
 					fr=true
 					r.Anchored=true
 					h.WalkSpeed=0
 					r.CFrame=r.CFrame-Vector3.new(0,200,0)
-
 				end
-
 			else
-
 				if fr then
-
 					fr=false
 					r.Anchored=false
 					h.WalkSpeed=16
-
 				end
-
 			end
 
 		end
