@@ -1,3 +1,4 @@
+```lua
 local P=game:GetService("Players")
 local U=game:GetService("UserInputService")
 
@@ -28,6 +29,23 @@ f.Size=UDim2.new(0,420,0,370)
 f.Position=UDim2.new(.5,-210,.5,-185)
 f.BackgroundColor3=Color3.fromRGB(255,170,170)
 Instance.new("UICorner",f)
+
+-- MINIMIZE BUTTON
+local min=Instance.new("TextButton",f)
+min.Size=UDim2.new(0,30,0,30)
+min.Position=UDim2.new(1,-35,0,5)
+min.Text="-"
+min.BackgroundColor3=Color3.fromRGB(255,200,200)
+Instance.new("UICorner",min)
+
+-- LOGO
+local logo=Instance.new("TextButton",g)
+logo.Size=UDim2.new(0,60,0,60)
+logo.Position=UDim2.new(.5,-30,.8,0)
+logo.Text="GUI"
+logo.Visible=false
+logo.BackgroundColor3=Color3.fromRGB(255,170,170)
+Instance.new("UICorner",logo)
 
 -- TITLE
 local t=Instance.new("TextLabel",f)
@@ -102,7 +120,7 @@ layout.Padding=UDim.new(0,2)
 
 local open=false
 
--- FIND PLAYER (supports partial names)
+-- FIND PLAYER
 local function gt(n)
 	n=n:lower()
 	for _,x in pairs(P:GetPlayers()) do
@@ -276,3 +294,30 @@ task.spawn(function()
 
 	end
 end)
+
+-- MINIMIZE FUNCTION
+min.MouseButton1Click:Connect(function()
+	f.Visible=false
+	logo.Visible=true
+end)
+
+logo.MouseButton1Click:Connect(function()
+	f.Visible=true
+	logo.Visible=false
+end)
+
+-- F5 TOGGLE
+U.InputBegan:Connect(function(i,gp)
+
+	if gp then return end
+
+	if i.KeyCode==Enum.KeyCode.F5 then
+
+		local v=not f.Visible
+		f.Visible=v
+		logo.Visible=not v
+
+	end
+
+end)
+```
