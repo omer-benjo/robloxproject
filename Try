@@ -1,169 +1,132 @@
 local player = game.Players.LocalPlayer
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "SFG_Ultra_Premium"
-screenGui.Parent = player:WaitForChild("PlayerGui")
-screenGui.ResetOnSpawn = false
+local scriptParent = script.Parent
 
--- הגדרות צבעים ועיצוב
-local COLORS = {
-    Main = Color3.fromRGB(20, 20, 27),
-    Sidebar = Color3.fromRGB(28, 28, 38),
-    Content = Color3.fromRGB(25, 25, 35),
-    Card = Color3.fromRGB(35, 35, 45),
-    TextPrimary = Color3.fromRGB(255, 255, 255),
-    TextSecondary = Color3.fromRGB(160, 160, 175),
-    Accent = Color3.fromRGB(85, 255, 127)
-}
+-- צבעים
+local BG_COLOR = Color3.fromRGB(24, 24, 30)
+local SIDEBAR_COLOR = Color3.fromRGB(31, 31, 39)
+local ACCENT_COLOR = Color3.fromRGB(85, 255, 127)
+local TEXT_PRIMARY = Color3.fromRGB(255, 255, 255)
+local TEXT_SECONDARY = Color3.fromRGB(160, 160, 175)
 
--- פריים ראשי
-local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 750, 0, 500)
-mainFrame.Position = UDim2.new(0.5, -375, 0.5, -250)
-mainFrame.BackgroundColor3 = COLORS.Main
-mainFrame.BorderSizePixel = 0
-mainFrame.Parent = screenGui
-Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 10)
+-- פריים ראשי משודרג (הפאנל)
+local panel = Instance.new("Frame")
+panel.Size = UDim2.new(0, 680, 0, 420)
+panel.Position = UDim2.new(0.5, -340, 0.5, -210)
+panel.BackgroundColor3 = BG_COLOR
+panel.BorderSizePixel = 0
+panel.Parent = scriptParent.Parent -- בהנחה ש-scriptParent הוא ה-Frame של הפרופיל והם אחים
 
--- סרגל צד
+-- עיגול פינות לפאנל הראשי
+local panelCorner = Instance.new("UICorner")
+panelCorner.CornerRadius = UDim.new(0, 14)
+panelCorner.Parent = panel
+
+-- סרגל צד לכלים
 local sidebar = Instance.new("Frame")
-sidebar.Size = UDim2.new(0, 220, 1, 0)
-sidebar.BackgroundColor3 = COLORS.Sidebar
+sidebar.Size = UDim2.new(0, 200, 1, 0)
+sidebar.Position = UDim2.new(0, 0, 0, 0)
+sidebar.BackgroundColor3 = SIDEBAR_COLOR
 sidebar.BorderSizePixel = 0
-sidebar.Parent = mainFrame
-Instance.new("UICorner", sidebar).CornerRadius = UDim.new(0, 10)
+sidebar.Parent = panel
 
--- שורת חיפוש
-local searchBar = Instance.new("TextBox")
-searchBar.Size = UDim2.new(0, 190, 0, 35)
-searchBar.Position = UDim2.new(0, 15, 0, 60)
-searchBar.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-searchBar.PlaceholderText = "Search"
-searchBar.Text = ""
-searchBar.TextColor3 = COLORS.TextPrimary
-searchBar.Font = Enum.Font.Gotham
-searchBar.Parent = sidebar
-Instance.new("UICorner", searchBar).CornerRadius = UDim.new(0, 8)
+local sidebarCorner = Instance.new("UICorner")
+sidebarCorner.CornerRadius = UDim.new(0, 14)
+sidebarCorner.Parent = sidebar
 
--- פרופיל משתמש בתחתית
-local profile = Instance.new("Frame")
-profile.Size = UDim2.new(1, -20, 0, 60)
-profile.Position = UDim2.new(0, 10, 1, -70)
-profile.BackgroundTransparency = 1
-profile.Parent = sidebar
+-- כותרת המשחק בסרגל הצד
+local gameTitle = Instance.new("TextLabel")
+gameTitle.Size = UDim2.new(1, -20, 0, 60)
+gameTitle.Position = UDim2.new(0, 10, 0, 0)
+gameTitle.BackgroundTransparency = 1
+gameTitle.Text = "SFG | ROBLOX GAME"
+gameTitle.TextColor3 = TEXT_PRIMARY
+gameTitle.Font = Enum.Font.GothamBold
+gameTitle.TextSize = 18
+gameTitle.TextXAlignment = Enum.TextXAlignment.Left
+gameTitle.Parent = sidebar
 
-local avatar = Instance.new("ImageLabel")
-avatar.Size = UDim2.new(0, 45, 0, 45)
-avatar.BackgroundColor3 = Color3.fromRGB(50, 200, 100)
-avatar.Image = "rbxassetid://15444511333" -- אייקון דמה
-avatar.Parent = profile
-Instance.new("UICorner", avatar).CornerRadius = UDim.new(1, 0)
-
-local username = Instance.new("TextLabel")
-username.Size = UDim2.new(1, -55, 0, 20)
-username.Position = UDim2.new(0, 55, 0, 5)
-username.Text = player.Name
-username.TextColor3 = COLORS.TextPrimary
-username.Font = Enum.Font.GothamBold
-username.TextXAlignment = Enum.TextXAlignment.Left
-username.BackgroundTransparency = 1
-username.Parent = profile
-
--- אזור התוכן הראשי
+-- קטע תוכן ראשי
 local content = Instance.new("Frame")
-content.Size = UDim2.new(1, -240, 1, -20)
-content.Position = UDim2.new(0, 230, 0, 10)
-content.BackgroundColor3 = COLORS.Content
-content.BorderSizePixel = 0
-content.Parent = mainFrame
-Instance.new("UICorner", content).CornerRadius = UDim.new(0, 10)
+content.Size = UDim2.new(1, -210, 1, -20)
+content.Position = UDim2.new(0, 210, 0, 10)
+content.BackgroundTransparency = 1
+content.Parent = panel
 
--- כותרת תוכן (לדוגמה Police)
-local header = Instance.new("TextLabel")
-header.Size = UDim2.new(1, -40, 0, 30)
-header.Position = UDim2.new(0, 20, 0, 20)
-header.Text = "Control Panel"
-header.TextColor3 = COLORS.TextPrimary
-header.TextSize = 20
-header.Font = Enum.Font.GothamBold
-header.TextXAlignment = Enum.TextXAlignment.Left
-header.BackgroundTransparency = 1
-header.Parent = content
+-- כפתור התחלה בולט
+local startBtn = Instance.new("TextButton")
+startBtn.Size = UDim2.new(0, 200, 0, 50)
+startBtn.Position = UDim2.new(0.5, -100, 0.5, -25)
+startBtn.BackgroundColor3 = ACCENT_COLOR
+startBtn.Text = "START GAME"
+startBtn.TextColor3 = BG_COLOR
+startBtn.Font = Enum.Font.GothamBold
+startBtn.TextSize = 20
+startBtn.Parent = content
 
-local subHeader = Instance.new("TextLabel")
-subHeader.Size = UDim2.new(1, -40, 0, 20)
-subHeader.Position = UDim2.new(0, 20, 0, 50)
-subHeader.Text = "Management and utility settings."
-subHeader.TextColor3 = COLORS.TextSecondary
-subHeader.TextSize = 14
-subHeader.Font = Enum.Font.Gotham
-subHeader.TextXAlignment = Enum.TextXAlignment.Left
-subHeader.BackgroundTransparency = 1
-subHeader.Parent = content
+local startCorner = Instance.new("UICorner")
+startCorner.CornerRadius = UDim.new(0, 10)
+startCorner.Parent = startBtn
 
--- יצירת כרטיס (Card)
-local function createCard(titleText, descText, yPos)
-    local card = Instance.new("Frame")
-    card.Size = UDim2.new(1, -40, 0, 100)
-    card.Position = UDim2.new(0, 20, 0, yPos)
-    card.BackgroundColor3 = COLORS.Card
-    card.Parent = content
-    Instance.new("UICorner", card).CornerRadius = UDim.new(0, 10)
+-- שורת פרופיל מובנית (משופרת מה-Frame המקורית שלך)
+-- אנחנו מחליפים את הפאנל המקורי שלך בפאנל הזה
+local profileBar = scriptParent
+profileBar.Size = UDim2.new(0, 190, 0, 70)
+profileBar.Position = UDim2.new(0, 5, 1, -75) -- מעט מעל התחתית
+profileBar.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+profileBar.BorderSizePixel = 0
+profileBar.Parent = sidebar
+
+-- עיגול פינות לפרופיל
+local profileCorner = Instance.new("UICorner")
+profileCorner.CornerRadius = UDim.new(0, 10)
+profileCorner.Parent = profileBar
+
+-- אחיות הפרופיל (מה שהיה לך ב-Explorer, עכשיו בתוך ה-Frame החדשה)
+local avatarImage = profileBar:FindFirstChild("ImageLabel")
+local textLabel = profileBar:FindFirstChild("TextLabel")
+
+-- עדכון אווטר (מובנה לתוך העיצוב)
+if avatarImage then
+    avatarImage.Image = "rbxthumb://type=AvatarHeadShot&id=" .. player.UserId .. "&w=150&h=150"
+    avatarImage.Position = UDim2.new(0, 10, 0, 10)
+    avatarImage.Size = UDim2.new(0, 50, 0, 50)
     
-    local ct = Instance.new("TextLabel")
-    ct.Size = UDim2.new(1, -20, 0, 30)
-    ct.Position = UDim2.new(0, 15, 0, 10)
-    ct.Text = titleText
-    ct.TextColor3 = COLORS.TextPrimary
-    ct.Font = Enum.Font.GothamBold
-    ct.TextXAlignment = Enum.TextXAlignment.Left
-    ct.BackgroundTransparency = 1
-    ct.Parent = card
-    
-    local cd = Instance.new("TextLabel")
-    cd.Size = UDim2.new(1, -20, 0, 20)
-    cd.Position = UDim2.new(0, 15, 0, 35)
-    cd.Text = descText
-    cd.TextColor3 = COLORS.TextSecondary
-    cd.Font = Enum.Font.Gotham
-    cd.TextXAlignment = Enum.TextXAlignment.Left
-    cd.BackgroundTransparency = 1
-    cd.Parent = card
-    
-    return card
+    -- הוספת UICorner לאוואטר כדי שיהיה עגול
+    local avatarCorner = Instance.new("UICorner")
+    avatarCorner.CornerRadius = UDim.new(1, 0) -- עיגול מלא
+    avatarCorner.Parent = avatarImage
 end
 
--- הוספת פונקציות בתוך כרטיסים
-local tpCard = createCard("Teleportation", "Move to selected players quickly.", 90)
-local input = Instance.new("TextBox")
-input.Size = UDim2.new(1, -30, 0, 30)
-input.Position = UDim2.new(0, 15, 0, 60)
-input.BackgroundColor3 = Color3.fromRGB(50, 50, 65)
-input.PlaceholderText = "Target Username"
-input.Text = ""
-input.TextColor3 = Color3.fromRGB(255,255,255)
-input.Parent = tpCard
-Instance.new("UICorner", input)
+-- עדכון טקסט
+if textLabel then
+    textLabel.Text = "Welcome Back, " .. player.DisplayName
+    textLabel.Size = UDim2.new(1, -75, 1, 0)
+    textLabel.Position = UDim2.new(0, 70, 0, 0)
+    textLabel.TextColor3 = TEXT_PRIMARY
+    textLabel.Font = Enum.Font.GothamMedium
+    textLabel.TextWrapped = true -- אם השם ארוך
+    textLabel.TextXAlignment = Enum.TextXAlignment.Left
+    textLabel.BackgroundTransparency = 1
+end
 
-local protCard = createCard("Protection", "Toggle advanced security features.", 200)
-local toggle = Instance.new("TextButton")
-toggle.Size = UDim2.new(0, 50, 0, 25)
-toggle.Position = UDim2.new(1, -65, 0, 15)
-toggle.BackgroundColor3 = Color3.fromRGB(60, 60, 75)
-toggle.Text = ""
-toggle.Parent = protCard
-local tCorner = Instance.new("UICorner", toggle)
-tCorner.CornerRadius = UDim.new(1, 0)
+-- הוספת כפתור כיבוי בתוך שורת הפרופיל
+local powerBtn = Instance.new("ImageButton")
+powerBtn.Size = UDim2.new(0, 30, 0, 30)
+powerBtn.Position = UDim2.new(1, -40, 0, 10)
+powerBtn.BackgroundTransparency = 1
+powerBtn.Image = "rbxassetid://15444511333" -- אייקון כוח דמה
+powerBtn.ImageColor3 = Color3.fromRGB(255, 100, 100)
+powerBtn.Parent = profileBar
 
-local knob = Instance.new("Frame")
-knob.Size = UDim2.new(0, 21, 0, 21)
-knob.Position = UDim2.new(0, 2, 0.5, -10)
-knob.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
-knob.Parent = toggle
-Instance.new("UICorner", knob).CornerRadius = UDim.new(1, 0)
-
-local active = false
-toggle.MouseButton1Click:Connect(function()
-    active = not active
-    toggle.BackgroundColor3 = active and COLORS.Accent or Color3.fromRGB(60, 60, 75)
-    knob:TweenPosition(active and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10), "Out", "Quad", 0.2)
+-- סגירת הממשק
+powerBtn.MouseButton1Click:Connect(function()
+    panel:Destroy()
 end)
+
+-- ביטול הפריים המקורי שלך (עכשיו הוא הוחלף)
+-- הערה: הקוד מניח ש-scriptParent הוא ה-Frame המקורי שלך מהתמונה.
+-- אנחנו משנים אותו ל-Invisible כי יצרנו מחדש את הפרופיל כחלק מהסרגל.
+if scriptParent.Parent:IsA("ScreenGui") then
+    scriptParent.Parent.Enabled = false
+    panel.Parent = scriptParent.Parent -- הפאנל החדש הולך ל-ScreenGui
+end
