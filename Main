@@ -1,4 +1,3 @@
-```lua
 local P=game:GetService("Players")
 local U=game:GetService("UserInputService")
 
@@ -320,4 +319,3 @@ U.InputBegan:Connect(function(i,gp)
 	end
 
 end)
-```
