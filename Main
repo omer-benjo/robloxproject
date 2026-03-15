@@ -317,5 +317,4 @@ U.InputBegan:Connect(function(i,gp)
 		logo.Visible=not v
 
 	end
-
 end)
