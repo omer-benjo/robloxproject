@@ -5,7 +5,6 @@ local c=p.Character or p.CharacterAdded:Wait()
 local r=c:WaitForChild("HumanoidRootPart")
 local h=c:WaitForChild("Humanoid")
 
-local target=nil
 local z=Vector3.new(-2543.30,14.81,4030.32)
 local rad=50
 local prot=false
@@ -17,8 +16,8 @@ g.ResetOnSpawn=false
 
 -- FRAME
 local f=Instance.new("Frame",g)
-f.Size=UDim2.new(0,420,0,360)
-f.Position=UDim2.new(.5,-210,.5,-180)
+f.Size=UDim2.new(0,420,0,370)
+f.Position=UDim2.new(.5,-210,.5,-185)
 f.BackgroundColor3=Color3.fromRGB(255,170,170)
 Instance.new("UICorner",f).CornerRadius=UDim.new(0,12)
 
@@ -27,8 +26,8 @@ s.Color=Color3.fromRGB(220,60,60)
 
 local gr=Instance.new("UIGradient",f)
 gr.Color=ColorSequence.new{
-ColorSequenceKeypoint.new(0,Color3.fromRGB(255,150,150)),
-ColorSequenceKeypoint.new(1,Color3.fromRGB(255,120,120))
+	ColorSequenceKeypoint.new(0,Color3.fromRGB(255,150,150)),
+	ColorSequenceKeypoint.new(1,Color3.fromRGB(255,120,120))
 }
 
 -- TITLE
@@ -47,8 +46,8 @@ sub.Position=UDim2.new(0,0,0,28)
 sub.BackgroundTransparency=1
 sub.Text="(F5 to toggle)"
 sub.Font=Enum.Font.Gotham
-sub.TextSize=12
-sub.TextColor3=Color3.fromRGB(120,120,120)
+sub.TextSize=16
+sub.TextColor3=Color3.fromRGB(98,98,98)
 
 -- MINIMIZE
 local min=Instance.new("TextButton",f)
@@ -67,47 +66,93 @@ logo.Visible=false
 logo.BackgroundColor3=Color3.fromRGB(255,170,170)
 Instance.new("UICorner",logo)
 
--- PLAYER LIST
-local list=Instance.new("ScrollingFrame",f)
-list.Size=UDim2.new(0,300,0,90)
-list.Position=UDim2.new(.5,-150,0,70)
-list.BackgroundColor3=Color3.fromRGB(255,200,200)
-list.ScrollBarThickness=6
+-- USERNAME BOX
+local b=Instance.new("TextBox",f)
+b.Size=UDim2.new(0,300,0,45)
+b.Position=UDim2.new(.5,-150,0,70)
+b.PlaceholderText="Enter Username"
+b.Font=Enum.Font.Gotham
+b.TextSize=16
+b.BackgroundColor3=Color3.fromRGB(255,200,200)
+Instance.new("UICorner",b)
+
+-- DROPDOWN BUTTON
+local dp=Instance.new("TextButton",f)
+dp.Size=UDim2.new(0,300,0,35)
+dp.Position=UDim2.new(.5,-150,0,120)
+dp.Text="Select Player ▼"
+dp.Font=Enum.Font.Gotham
+dp.TextSize=14
+dp.BackgroundColor3=Color3.fromRGB(255,200,200)
+Instance.new("UICorner",dp)
+
+-- DROPDOWN LIST
+local list=Instance.new("Frame",f)
+list.Size=UDim2.new(0,300,0,0)
+list.Position=UDim2.new(.5,-150,0,155)
+list.BackgroundColor3=Color3.fromRGB(255,210,210)
+list.ClipsDescendants=true
 Instance.new("UICorner",list)
 
-local layout=Instance.new("UIListLayout",list)
-layout.Padding=UDim.new(0,4)
+local layout=Instance.new("UIListLayout")
+layout.Parent=list
+layout.Padding=UDim.new(0,2)
 
-local function refresh()
-	list:ClearAllChildren()
-	layout.Parent=list
+local open=false
+
+-- UPDATE PLAYER LIST
+local function refreshPlayers()
+
+	for _,v in pairs(list:GetChildren()) do
+		if v:IsA("TextButton") then
+			v:Destroy()
+		end
+	end
 	
+	local count=0
+
 	for _,plr in pairs(P:GetPlayers()) do
 		if plr~=p then
-			local b=Instance.new("TextButton",list)
-			b.Size=UDim2.new(1,-5,0,28)
-			b.Text=plr.Name
-			b.Font=Enum.Font.Gotham
-			b.TextSize=14
-			b.BackgroundColor3=Color3.fromRGB(255,180,180)
-			b.TextColor3=Color3.fromRGB(30,20,20)
-			Instance.new("UICorner",b)
+			count=count+1
 
-			b.MouseButton1Click:Connect(function()
-				target=plr
+			local btn=Instance.new("TextButton")
+			btn.Parent=list
+			btn.Size=UDim2.new(1,0,0,30)
+			btn.Text=plr.Name
+			btn.Font=Enum.Font.Gotham
+			btn.TextSize=14
+			btn.BackgroundColor3=Color3.fromRGB(255,200,200)
+			Instance.new("UICorner",btn)
+
+			btn.MouseButton1Click:Connect(function()
+				b.Text=plr.Name
+				open=false
+				list:TweenSize(UDim2.new(0,300,0,0),"Out","Quad",0.2,true)
 			end)
 		end
 	end
+
+	list.Size=UDim2.new(0,300,0,count*32)
 end
 
-refresh()
-P.PlayerAdded:Connect(refresh)
-P.PlayerRemoving:Connect(refresh)
+dp.MouseButton1Click:Connect(function()
+	open=not open
+
+	if open then
+		refreshPlayers()
+		list:TweenSize(UDim2.new(0,300,0,#P:GetPlayers()*32),"Out","Quad",0.2,true)
+	else
+		list:TweenSize(UDim2.new(0,300,0,0),"Out","Quad",0.2,true)
+	end
+end)
+
+P.PlayerAdded:Connect(refreshPlayers)
+P.PlayerRemoving:Connect(refreshPlayers)
 
 -- TELEPORT ONCE
 local tp=Instance.new("TextButton",f)
 tp.Size=UDim2.new(0,300,0,45)
-tp.Position=UDim2.new(.5,-150,0,170)
+tp.Position=UDim2.new(.5,-150,0,200)
 tp.Text="Teleport Once"
 tp.Font=Enum.Font.Gotham
 tp.TextSize=16
@@ -117,7 +162,7 @@ Instance.new("UICorner",tp)
 -- INFINITE TELEPORT
 local it=Instance.new("TextButton",f)
 it.Size=UDim2.new(0,300,0,45)
-it.Position=UDim2.new(.5,-150,0,225)
+it.Position=UDim2.new(.5,-150,0,255)
 it.Text="Infinite Teleport: OFF"
 it.Font=Enum.Font.Gotham
 it.TextSize=16
@@ -127,7 +172,7 @@ Instance.new("UICorner",it)
 -- PROTECTION
 local pr=Instance.new("TextButton",f)
 pr.Size=UDim2.new(0,300,0,45)
-pr.Position=UDim2.new(.5,-150,0,280)
+pr.Position=UDim2.new(.5,-150,0,310)
 pr.Text="Protection: OFF"
 pr.Font=Enum.Font.Gotham
 pr.TextSize=16
@@ -136,27 +181,27 @@ Instance.new("UICorner",pr)
 
 -- DRAG
 local function drag(o)
-local d,s,p
-o.InputBegan:Connect(function(i)
-if i.UserInputType==Enum.UserInputType.MouseButton1 then
-d=true
-s=i.Position
-p=o.Position
-end
-end)
+	local d,s,p
+	o.InputBegan:Connect(function(i)
+		if i.UserInputType==Enum.UserInputType.MouseButton1 then
+			d=true
+			s=i.Position
+			p=o.Position
+		end
+	end)
 
-o.InputEnded:Connect(function(i)
-if i.UserInputType==Enum.UserInputType.MouseButton1 then
-d=false
-end
-end)
+	o.InputEnded:Connect(function(i)
+		if i.UserInputType==Enum.UserInputType.MouseButton1 then
+			d=false
+		end
+	end)
 
-U.InputChanged:Connect(function(i)
-if d and i.UserInputType==Enum.UserInputType.MouseMovement then
-local v=i.Position-s
-o.Position=UDim2.new(p.X.Scale,p.X.Offset+v.X,p.Y.Scale,p.Y.Offset+v.Y)
-end
-end)
+	U.InputChanged:Connect(function(i)
+		if d and i.UserInputType==Enum.UserInputType.MouseMovement then
+			local v=i.Position-s
+			o.Position=UDim2.new(p.X.Scale,p.X.Offset+v.X,p.Y.Scale,p.Y.Offset+v.Y)
+		end
+	end)
 end
 
 drag(f)
@@ -164,81 +209,92 @@ drag(logo)
 
 -- MINIMIZE
 min.MouseButton1Click:Connect(function()
-f.Visible=false
-logo.Visible=true
+	f.Visible=false
+	logo.Visible=true
 end)
 
 logo.MouseButton1Click:Connect(function()
-f.Visible=true
-logo.Visible=false
+	f.Visible=true
+	logo.Visible=false
 end)
 
 -- F5 TOGGLE
 U.InputBegan:Connect(function(i,gp)
-if gp then return end
-if i.KeyCode==Enum.KeyCode.F5 then
-local v=not f.Visible
-f.Visible=v
-logo.Visible=not v
-end
+	if gp then return end
+	if i.KeyCode==Enum.KeyCode.F5 then
+		local v=not f.Visible
+		f.Visible=v
+		logo.Visible=not v
+	end
 end)
+
+-- FIND TARGET
+local function gt(n)
+	for _,x in pairs(P:GetPlayers()) do
+		if x.Name==n then
+			return x
+		end
+	end
+end
 
 -- TELEPORT ONCE
 tp.MouseButton1Click:Connect(function()
-if target and target.Character then
-local tr=target.Character:FindFirstChild("HumanoidRootPart")
-if tr then
-r.CFrame=tr.CFrame*CFrame.new(0,0,-2)
-end
-end
+	local t=gt(b.Text)
+	if t and t.Character then
+		local tr=t.Character:FindFirstChild("HumanoidRootPart")
+		if tr then
+			r.CFrame=tr.CFrame*CFrame.new(0,0,-2)
+		end
+	end
 end)
 
 -- INFINITE TELEPORT
 it.MouseButton1Click:Connect(function()
-inf=not inf
-it.Text=inf and "Infinite Teleport: ON" or "Infinite Teleport: OFF"
+	inf=not inf
+	it.Text=inf and "Infinite Teleport: ON" or "Infinite Teleport: OFF"
 
-if inf then
-task.spawn(function()
-while inf do
-if target and target.Character then
-local tr=target.Character:FindFirstChild("HumanoidRootPart")
-if tr then
-r.CFrame=tr.CFrame*CFrame.new(0,0,-2)
-end
-end
-task.wait(.01)
-end
-end)
-end
+	if inf then
+		task.spawn(function()
+			while inf do
+				local t=gt(b.Text)
+				if t and t.Character then
+					local tr=t.Character:FindFirstChild("HumanoidRootPart")
+					if tr then
+						r.CFrame=tr.CFrame*CFrame.new(0,0,-2)
+					end
+				end
+				task.wait(.01)
+			end
+		end)
+	end
 end)
 
--- PROTECTION BUTTON
+-- PROTECTION
 pr.MouseButton1Click:Connect(function()
-prot=not prot
-pr.Text=prot and "Protection: ON" or "Protection: OFF"
+	prot=not prot
+	pr.Text=prot and "Protection: ON" or "Protection: OFF"
 end)
 
 -- PROTECTION LOOP
 task.spawn(function()
-while true do
-if prot then
-local m=(r.Position-z).Magnitude
-if m<=rad then
-if not fr then
-fr=true
-r.Anchored=true
-h.WalkSpeed=0
-r.CFrame=r.CFrame-Vector3.new(0,200,0)
-end
-else
-if fr then
-fr=false
-r.Anchored=false
-h.WalkSpeed=16
-end
-end
-end
-task.wait(.02)
-end
+	while true do
+		if prot then
+			local m=(r.Position-z).Magnitude
+			if m<=rad then
+				if not fr then
+					fr=true
+					r.Anchored=true
+					h.WalkSpeed=0
+					r.CFrame=r.CFrame-Vector3.new(0,200,0)
+				end
+			else
+				if fr then
+					fr=false
+					r.Anchored=false
+					h.WalkSpeed=16
+				end
+			end
+		end
+		task.wait(.02)
+	end
 end)
