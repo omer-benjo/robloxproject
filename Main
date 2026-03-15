@@ -5,6 +5,7 @@ local c=p.Character or p.CharacterAdded:Wait()
 local r=c:WaitForChild("HumanoidRootPart")
 local h=c:WaitForChild("Humanoid")
 
+local target=nil
 local z=Vector3.new(-2543.30,14.81,4030.32)
 local rad=50
 local prot=false
@@ -16,8 +17,8 @@ g.ResetOnSpawn=false
 
 -- FRAME
 local f=Instance.new("Frame",g)
-f.Size=UDim2.new(0,420,0,330)
-f.Position=UDim2.new(.5,-210,.5,-165)
+f.Size=UDim2.new(0,420,0,360)
+f.Position=UDim2.new(.5,-210,.5,-180)
 f.BackgroundColor3=Color3.fromRGB(255,170,170)
 Instance.new("UICorner",f).CornerRadius=UDim.new(0,12)
 
@@ -33,7 +34,6 @@ ColorSequenceKeypoint.new(1,Color3.fromRGB(255,120,120))
 -- TITLE
 local t=Instance.new("TextLabel",f)
 t.Size=UDim2.new(1,0,0,35)
-t.Position=UDim2.new(0,0,0,0)
 t.BackgroundTransparency=1
 t.Text="Control Panel"
 t.Font=Enum.Font.GothamSemibold
@@ -67,20 +67,47 @@ logo.Visible=false
 logo.BackgroundColor3=Color3.fromRGB(255,170,170)
 Instance.new("UICorner",logo)
 
--- USERNAME BOX
-local b=Instance.new("TextBox",f)
-b.Size=UDim2.new(0,300,0,45)
-b.Position=UDim2.new(.5,-150,0,70)
-b.PlaceholderText="Enter Username"
-b.Font=Enum.Font.Gotham
-b.TextSize=16
-b.BackgroundColor3=Color3.fromRGB(255,200,200)
-Instance.new("UICorner",b)
+-- PLAYER LIST
+local list=Instance.new("ScrollingFrame",f)
+list.Size=UDim2.new(0,300,0,90)
+list.Position=UDim2.new(.5,-150,0,70)
+list.BackgroundColor3=Color3.fromRGB(255,200,200)
+list.ScrollBarThickness=6
+Instance.new("UICorner",list)
+
+local layout=Instance.new("UIListLayout",list)
+layout.Padding=UDim.new(0,4)
+
+local function refresh()
+	list:ClearAllChildren()
+	layout.Parent=list
+	
+	for _,plr in pairs(P:GetPlayers()) do
+		if plr~=p then
+			local b=Instance.new("TextButton",list)
+			b.Size=UDim2.new(1,-5,0,28)
+			b.Text=plr.Name
+			b.Font=Enum.Font.Gotham
+			b.TextSize=14
+			b.BackgroundColor3=Color3.fromRGB(255,180,180)
+			b.TextColor3=Color3.fromRGB(30,20,20)
+			Instance.new("UICorner",b)
+
+			b.MouseButton1Click:Connect(function()
+				target=plr
+			end)
+		end
+	end
+end
+
+refresh()
+P.PlayerAdded:Connect(refresh)
+P.PlayerRemoving:Connect(refresh)
 
 -- TELEPORT ONCE
 local tp=Instance.new("TextButton",f)
 tp.Size=UDim2.new(0,300,0,45)
-tp.Position=UDim2.new(.5,-150,0,125)
+tp.Position=UDim2.new(.5,-150,0,170)
 tp.Text="Teleport Once"
 tp.Font=Enum.Font.Gotham
 tp.TextSize=16
@@ -90,7 +117,7 @@ Instance.new("UICorner",tp)
 -- INFINITE TELEPORT
 local it=Instance.new("TextButton",f)
 it.Size=UDim2.new(0,300,0,45)
-it.Position=UDim2.new(.5,-150,0,180)
+it.Position=UDim2.new(.5,-150,0,225)
 it.Text="Infinite Teleport: OFF"
 it.Font=Enum.Font.Gotham
 it.TextSize=16
@@ -100,14 +127,14 @@ Instance.new("UICorner",it)
 -- PROTECTION
 local pr=Instance.new("TextButton",f)
 pr.Size=UDim2.new(0,300,0,45)
-pr.Position=UDim2.new(.5,-150,0,235)
+pr.Position=UDim2.new(.5,-150,0,280)
 pr.Text="Protection: OFF"
 pr.Font=Enum.Font.Gotham
 pr.TextSize=16
 pr.BackgroundColor3=Color3.fromRGB(255,200,200)
 Instance.new("UICorner",pr)
 
--- DRAG FUNCTION
+-- DRAG
 local function drag(o)
 local d,s,p
 o.InputBegan:Connect(function(i)
@@ -135,13 +162,12 @@ end
 drag(f)
 drag(logo)
 
--- MINIMIZE BUTTON
+-- MINIMIZE
 min.MouseButton1Click:Connect(function()
 f.Visible=false
 logo.Visible=true
 end)
 
--- RESTORE FROM LOGO
 logo.MouseButton1Click:Connect(function()
 f.Visible=true
 logo.Visible=false
@@ -157,20 +183,10 @@ logo.Visible=not v
 end
 end)
 
--- FIND TARGET
-local function gt(n)
-for _,x in pairs(P:GetPlayers()) do
-if x.Name==n then
-return x
-end
-end
-end
-
 -- TELEPORT ONCE
 tp.MouseButton1Click:Connect(function()
-local t=gt(b.Text)
-if t and t.Character then
-local tr=t.Character:FindFirstChild("HumanoidRootPart")
+if target and target.Character then
+local tr=target.Character:FindFirstChild("HumanoidRootPart")
 if tr then
 r.CFrame=tr.CFrame*CFrame.new(0,0,-2)
 end
@@ -185,9 +201,8 @@ it.Text=inf and "Infinite Teleport: ON" or "Infinite Teleport: OFF"
 if inf then
 task.spawn(function()
 while inf do
-local t=gt(b.Text)
-if t and t.Character then
-local tr=t.Character:FindFirstChild("HumanoidRootPart")
+if target and target.Character then
+local tr=target.Character:FindFirstChild("HumanoidRootPart")
 if tr then
 r.CFrame=tr.CFrame*CFrame.new(0,0,-2)
 end
@@ -198,7 +213,7 @@ end)
 end
 end)
 
--- PROTECTION
+-- PROTECTION BUTTON
 pr.MouseButton1Click:Connect(function()
 prot=not prot
 pr.Text=prot and "Protection: ON" or "Protection: OFF"
