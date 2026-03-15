@@ -1,207 +1,169 @@
 local player = game.Players.LocalPlayer
-local mouse = player:GetMouse()
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "SFG_Modern_Menu"
+screenGui.Name = "SFG_Ultra_Premium"
 screenGui.Parent = player:WaitForChild("PlayerGui")
 screenGui.ResetOnSpawn = false
 
--- משתני לוגיקה מקוריים
-local infiniteTeleport = false
-local protectionEnabled = false
-local selectedPlayer = nil
+-- הגדרות צבעים ועיצוב
+local COLORS = {
+    Main = Color3.fromRGB(20, 20, 27),
+    Sidebar = Color3.fromRGB(28, 28, 38),
+    Content = Color3.fromRGB(25, 25, 35),
+    Card = Color3.fromRGB(35, 35, 45),
+    TextPrimary = Color3.fromRGB(255, 255, 255),
+    TextSecondary = Color3.fromRGB(160, 160, 175),
+    Accent = Color3.fromRGB(85, 255, 127)
+}
 
--- יצירת המבנה הראשי
+-- פריים ראשי
 local mainFrame = Instance.new("Frame")
-mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 650, 0, 450)
-mainFrame.Position = UDim2.new(0.5, -325, 0.5, -225)
-mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 33)
+mainFrame.Size = UDim2.new(0, 750, 0, 500)
+mainFrame.Position = UDim2.new(0.5, -375, 0.5, -250)
+mainFrame.BackgroundColor3 = COLORS.Main
 mainFrame.BorderSizePixel = 0
-mainFrame.Active = true
-mainFrame.Draggable = true
 mainFrame.Parent = screenGui
-
-local mainCorner = Instance.new("UICorner")
-mainCorner.CornerRadius = UDim.new(0, 12)
-mainCorner.Parent = mainFrame
+Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 10)
 
 -- סרגל צד
 local sidebar = Instance.new("Frame")
-sidebar.Name = "Sidebar"
-sidebar.Size = UDim2.new(0, 200, 1, 0)
-sidebar.BackgroundColor3 = Color3.fromRGB(32, 32, 42)
+sidebar.Size = UDim2.new(0, 220, 1, 0)
+sidebar.BackgroundColor3 = COLORS.Sidebar
 sidebar.BorderSizePixel = 0
 sidebar.Parent = mainFrame
+Instance.new("UICorner", sidebar).CornerRadius = UDim.new(0, 10)
 
-local sidebarCorner = Instance.new("UICorner")
-sidebarCorner.CornerRadius = UDim.new(0, 12)
-sidebarCorner.Parent = sidebar
+-- שורת חיפוש
+local searchBar = Instance.new("TextBox")
+searchBar.Size = UDim2.new(0, 190, 0, 35)
+searchBar.Position = UDim2.new(0, 15, 0, 60)
+searchBar.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+searchBar.PlaceholderText = "Search"
+searchBar.Text = ""
+searchBar.TextColor3 = COLORS.TextPrimary
+searchBar.Font = Enum.Font.Gotham
+searchBar.Parent = sidebar
+Instance.new("UICorner", searchBar).CornerRadius = UDim.new(0, 8)
 
--- כותרת
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, -20, 0, 50)
-title.Position = UDim2.new(0, 20, 0, 0)
-title.BackgroundTransparency = 1
-title.Text = "SFG | DRIVING EMPIRE | v1.0.18"
-title.TextColor3 = Color3.fromRGB(255, 255, 255)
-title.TextXAlignment = Enum.TextXAlignment.Left
-title.Font = Enum.Font.GothamBold
-title.TextSize = 16
-title.Parent = mainFrame
+-- פרופיל משתמש בתחתית
+local profile = Instance.new("Frame")
+profile.Size = UDim2.new(1, -20, 0, 60)
+profile.Position = UDim2.new(0, 10, 1, -70)
+profile.BackgroundTransparency = 1
+profile.Parent = sidebar
 
--- רשימת טאבים
-local tabList = Instance.new("ScrollingFrame")
-tabList.Size = UDim2.new(1, 0, 1, -120)
-tabList.Position = UDim2.new(0, 0, 0, 60)
-tabList.BackgroundTransparency = 1
-tabList.BorderSizePixel = 0
-tabList.ScrollBarThickness = 0
-tabList.Parent = sidebar
+local avatar = Instance.new("ImageLabel")
+avatar.Size = UDim2.new(0, 45, 0, 45)
+avatar.BackgroundColor3 = Color3.fromRGB(50, 200, 100)
+avatar.Image = "rbxassetid://15444511333" -- אייקון דמה
+avatar.Parent = profile
+Instance.new("UICorner", avatar).CornerRadius = UDim.new(1, 0)
 
-local layout = Instance.new("UIListLayout")
-layout.Padding = UDim.new(0, 5)
-layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-layout.Parent = tabList
+local username = Instance.new("TextLabel")
+username.Size = UDim2.new(1, -55, 0, 20)
+username.Position = UDim2.new(0, 55, 0, 5)
+username.Text = player.Name
+username.TextColor3 = COLORS.TextPrimary
+username.Font = Enum.Font.GothamBold
+username.TextXAlignment = Enum.TextXAlignment.Left
+username.BackgroundTransparency = 1
+username.Parent = profile
 
--- אזור התוכן
-local container = Instance.new("Frame")
-container.Name = "ContentContainer"
-container.Size = UDim2.new(1, -220, 1, -20)
-container.Position = UDim2.new(0, 210, 0, 10)
-container.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
-container.BorderSizePixel = 0
-container.Parent = mainFrame
+-- אזור התוכן הראשי
+local content = Instance.new("Frame")
+content.Size = UDim2.new(1, -240, 1, -20)
+content.Position = UDim2.new(0, 230, 0, 10)
+content.BackgroundColor3 = COLORS.Content
+content.BorderSizePixel = 0
+content.Parent = mainFrame
+Instance.new("UICorner", content).CornerRadius = UDim.new(0, 10)
 
-local containerCorner = Instance.new("UICorner")
-containerCorner.CornerRadius = UDim.new(0, 10)
-containerCorner.Parent = container
+-- כותרת תוכן (לדוגמה Police)
+local header = Instance.new("TextLabel")
+header.Size = UDim2.new(1, -40, 0, 30)
+header.Position = UDim2.new(0, 20, 0, 20)
+header.Text = "Control Panel"
+header.TextColor3 = COLORS.TextPrimary
+header.TextSize = 20
+header.Font = Enum.Font.GothamBold
+header.TextXAlignment = Enum.TextXAlignment.Left
+header.BackgroundTransparency = 1
+header.Parent = content
 
--- פונקציה ליצירת כפתור טאב
-local function createTab(name, color)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0, 180, 0, 45)
-    btn.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-    btn.BorderSizePixel = 0
-    btn.Text = "      " .. name
-    btn.TextColor3 = Color3.fromRGB(200, 200, 200)
-    btn.Font = Enum.Font.Gotham
-    btn.TextSize = 14
-    btn.TextXAlignment = Enum.TextXAlignment.Left
-    btn.Parent = tabList
+local subHeader = Instance.new("TextLabel")
+subHeader.Size = UDim2.new(1, -40, 0, 20)
+subHeader.Position = UDim2.new(0, 20, 0, 50)
+subHeader.Text = "Management and utility settings."
+subHeader.TextColor3 = COLORS.TextSecondary
+subHeader.TextSize = 14
+subHeader.Font = Enum.Font.Gotham
+subHeader.TextXAlignment = Enum.TextXAlignment.Left
+subHeader.BackgroundTransparency = 1
+subHeader.Parent = content
+
+-- יצירת כרטיס (Card)
+local function createCard(titleText, descText, yPos)
+    local card = Instance.new("Frame")
+    card.Size = UDim2.new(1, -40, 0, 100)
+    card.Position = UDim2.new(0, 20, 0, yPos)
+    card.BackgroundColor3 = COLORS.Card
+    card.Parent = content
+    Instance.new("UICorner", card).CornerRadius = UDim.new(0, 10)
     
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 8)
-    corner.Parent = btn
+    local ct = Instance.new("TextLabel")
+    ct.Size = UDim2.new(1, -20, 0, 30)
+    ct.Position = UDim2.new(0, 15, 0, 10)
+    ct.Text = titleText
+    ct.TextColor3 = COLORS.TextPrimary
+    ct.Font = Enum.Font.GothamBold
+    ct.TextXAlignment = Enum.TextXAlignment.Left
+    ct.BackgroundTransparency = 1
+    ct.Parent = card
     
-    local icon = Instance.new("Frame")
-    icon.Size = UDim2.new(0, 25, 0, 25)
-    icon.Position = UDim2.new(0, 10, 0.5, -12)
-    icon.BackgroundColor3 = color
-    icon.Parent = btn
-    Instance.new("UICorner", icon).CornerRadius = UDim.new(0, 6)
+    local cd = Instance.new("TextLabel")
+    cd.Size = UDim2.new(1, -20, 0, 20)
+    cd.Position = UDim2.new(0, 15, 0, 35)
+    cd.Text = descText
+    cd.TextColor3 = COLORS.TextSecondary
+    cd.Font = Enum.Font.Gotham
+    cd.TextXAlignment = Enum.TextXAlignment.Left
+    cd.BackgroundTransparency = 1
+    cd.Parent = card
     
-    return btn
+    return card
 end
 
--- יצירת הטאבים
-local mainTabBtn = createTab("Control Panel", Color3.fromRGB(85, 255, 127))
-local miscTabBtn = createTab("Misc Tab", Color3.fromRGB(170, 170, 255))
+-- הוספת פונקציות בתוך כרטיסים
+local tpCard = createCard("Teleportation", "Move to selected players quickly.", 90)
+local input = Instance.new("TextBox")
+input.Size = UDim2.new(1, -30, 0, 30)
+input.Position = UDim2.new(0, 15, 0, 60)
+input.BackgroundColor3 = Color3.fromRGB(50, 50, 65)
+input.PlaceholderText = "Target Username"
+input.Text = ""
+input.TextColor3 = Color3.fromRGB(255,255,255)
+input.Parent = tpCard
+Instance.new("UICorner", input)
 
--- אלמנטים של ה-Control Panel (הפונקציות שלך)
-local function setupControls()
-    local list = Instance.new("UIListLayout", container)
-    list.Padding = UDim.new(0, 10)
-    list.HorizontalAlignment = Enum.HorizontalAlignment.Center
+local protCard = createCard("Protection", "Toggle advanced security features.", 200)
+local toggle = Instance.new("TextButton")
+toggle.Size = UDim2.new(0, 50, 0, 25)
+toggle.Position = UDim2.new(1, -65, 0, 15)
+toggle.BackgroundColor3 = Color3.fromRGB(60, 60, 75)
+toggle.Text = ""
+toggle.Parent = protCard
+local tCorner = Instance.new("UICorner", toggle)
+tCorner.CornerRadius = UDim.new(1, 0)
 
-    local padding = Instance.new("UIPadding", container)
-    padding.PaddingTop = UDim.new(0, 20)
+local knob = Instance.new("Frame")
+knob.Size = UDim2.new(0, 21, 0, 21)
+knob.Position = UDim2.new(0, 2, 0.5, -10)
+knob.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+knob.Parent = toggle
+Instance.new("UICorner", knob).CornerRadius = UDim.new(1, 0)
 
-    -- תיבת טקסט לשם שחקן
-    local nameInput = Instance.new("TextBox")
-    nameInput.Size = UDim2.new(0, 350, 0, 40)
-    nameInput.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
-    nameInput.TextColor3 = Color3.fromRGB(255, 255, 255)
-    nameInput.PlaceholderText = "Enter Player Name..."
-    nameInput.Text = ""
-    nameInput.Font = Enum.Font.Gotham
-    nameInput.Parent = container
-    Instance.new("UICorner", nameInput)
-
-    -- כפתור טלפורט
-    local tpBtn = Instance.new("TextButton")
-    tpBtn.Size = UDim2.new(0, 350, 0, 45)
-    tpBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 75)
-    tpBtn.Text = "Teleport Once"
-    tpBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    tpBtn.Font = Enum.Font.GothamBold
-    tpBtn.Parent = container
-    Instance.new("UICorner", tpBtn)
-
-    tpBtn.MouseButton1Click:Connect(function()
-        local target = game.Players:FindFirstChild(nameInput.Text)
-        if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
-            player.Character.HumanoidRootPart.CFrame = target.Character.HumanoidRootPart.CFrame
-        end
-    end)
-
-    -- טוגל טלפורט אינסופי
-    local infTpBtn = Instance.new("TextButton")
-    infTpBtn.Size = UDim2.new(0, 350, 0, 45)
-    infTpBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 75)
-    infTpBtn.Text = "Infinite Teleport: OFF"
-    infTpBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
-    infTpBtn.Font = Enum.Font.GothamBold
-    infTpBtn.Parent = container
-    Instance.new("UICorner", infTpBtn)
-
-    infTpBtn.MouseButton1Click:Connect(function()
-        infiniteTeleport = not infiniteTeleport
-        infTpBtn.Text = "Infinite Teleport: " .. (infiniteTeleport and "ON" or "OFF")
-        infTpBtn.TextColor3 = infiniteTeleport and Color3.fromRGB(100, 255, 100) or Color3.fromRGB(255, 100, 100)
-        
-        spawn(function()
-            while infiniteTeleport do
-                local target = game.Players:FindFirstChild(nameInput.Text)
-                if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
-                    player.Character.HumanoidRootPart.CFrame = target.Character.HumanoidRootPart.CFrame
-                end
-                wait(0.1)
-            end
-        end)
-    end)
-
-    -- טוגל הגנה
-    local protBtn = Instance.new("TextButton")
-    protBtn.Size = UDim2.new(0, 350, 0, 45)
-    protBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 75)
-    protBtn.Text = "Protection: OFF"
-    protBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
-    protBtn.Font = Enum.Font.GothamBold
-    protBtn.Parent = container
-    Instance.new("UICorner", protBtn)
-
-    protBtn.MouseButton1Click:Connect(function()
-        protectionEnabled = not protectionEnabled
-        protBtn.Text = "Protection: " .. (protectionEnabled and "ON" or "OFF")
-        protBtn.TextColor3 = protectionEnabled and Color3.fromRGB(100, 255, 100) or Color3.fromRGB(255, 100, 100)
-        -- כאן תוכל להוסיף את הלוגיקה הספציפית של ההגנה שלך מהקוד המקורי
-    end)
-end
-
-setupControls()
-
--- כפתור סגירה (X)
-local closeBtn = Instance.new("TextButton")
-closeBtn.Size = UDim2.new(0, 30, 0, 30)
-closeBtn.Position = UDim2.new(1, -40, 0, 10)
-closeBtn.BackgroundTransparency = 1
-closeBtn.Text = "X"
-closeBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
-closeBtn.Font = Enum.Font.GothamBold
-closeBtn.TextSize = 18
-closeBtn.Parent = mainFrame
-
-closeBtn.MouseButton1Click:Connect(function()
-    screenGui:Destroy()
-    infiniteTeleport = false
+local active = false
+toggle.MouseButton1Click:Connect(function()
+    active = not active
+    toggle.BackgroundColor3 = active and COLORS.Accent or Color3.fromRGB(60, 60, 75)
+    knob:TweenPosition(active and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10), "Out", "Quad", 0.2)
 end)
