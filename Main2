@@ -1,0 +1,503 @@
+-- BENJO SCRIPTS (Styled Version) - FULL (with Police layout + Finder tab)
+local Players = game:GetService("Players")
+local TeleportService = game:GetService("TeleportService")
+local UserInputService = game:GetService("UserInputService")
+local HttpService = game:GetService("HttpService")
+
+local player = Players.LocalPlayer
+if not player then return end
+
+local ACCENT = Color3.fromRGB(66,133,244)
+
+-- Auto script flag
+local autoScript = false
+
+-- RECONNECT
+local function reconnect()
+	pcall(function()
+		if game.JobId and game.JobId ~= "" then
+			TeleportService:TeleportToPlaceInstance(game.PlaceId,game.JobId,player)
+		else
+			TeleportService:Teleport(game.PlaceId,player)
+		end
+	end)
+end
+
+-- SERVER FINDER
+local function findServer()
+	-- gather server ids from Roblox servers API (first few pages)
+	local servers = {}
+	local cursor = nil
+	for page=1,6 do -- limit pages to avoid long loops
+		local url = "https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/Public?sortOrder=Asc&limit=100"
+		if cursor then
+			url = url .. "&cursor=" .. cursor
+		end
+
+		local ok, res = pcall(function()
+			-- try game:HttpGet first (commonly available in exploit environments), otherwise use HttpService
+			if (type(game.HttpGet) == "function") then
+				return game:HttpGet(url)
+			else
+				return HttpService:GetAsync(url)
+			end
+		end)
+
+		if not ok or not res then break end
+
+		local decoded
+		ok, decoded = pcall(function() return HttpService:JSONDecode(res) end)
+		if not ok or not decoded or not decoded.data then break end
+
+		for _,v in ipairs(decoded.data) do
+			if v.playing < v.maxPlayers and tostring(v.id) ~= tostring(game.JobId) then
+				table.insert(servers, tostring(v.id))
+			end
+		end
+
+		if not decoded.nextPageCursor then break end
+		cursor = decoded.nextPageCursor
+	end
+
+	if #servers == 0 then
+		warn("No available servers found.")
+		return
+	end
+
+	local target = servers[math.random(1, #servers)]
+
+	-- If autoScript is ON, try to queue a script to run on teleport (supports common executors)
+	if autoScript then
+		-- script to run on the new server
+		local queuedCode = [[
+			local Players = game:GetService("Players")
+			task.wait(3)
+			-- try to become police (best-effort)
+			pcall(function()
+				game:GetService("ReplicatedStorage").Remotes.RequestStartJobSession:FireServer("Security","jobPad")
+			end)
+			task.wait(1)
+			-- run police action on all players (best-effort)
+			pcall(function()
+				for _, pl in pairs(Players:GetPlayers()) do
+					pcall(function()
+						game:GetService("ReplicatedStorage").Remotes.RequestArrestCriminal:FireServer(pl)
+					end)
+				end
+			end)
+		]]
+
+		local queued = false
+		-- syn
+		if type(syn) == "table" and type(syn.queue_on_teleport) == "function" then
+			pcall(function() syn.queue_on_teleport(queuedCode) end)
+			queued = true
+		-- secure v3 / other executors
+		elseif type(queue_on_teleport) == "function" then
+			pcall(function() queue_on_teleport(queuedCode) end)
+			queued = true
+		elseif type(writefile) == "function" and type(loadstring) == "function" then
+			-- some executors allow creating a file and queueing it; best-effort (not guaranteed)
+			pcall(function()
+				local fileName = "autorun_queued.lua"
+				writefile(fileName, queuedCode)
+				if type(syn) == "table" and type(syn.queue_on_teleport) == "function" then
+					syn.queue_on_teleport("loadfile('"..fileName.."')()")
+					queued = true
+				end
+			end)
+		end
+
+		if not queued then
+			-- if we couldn't queue the code, inform via warning; also create a simple Notification in PlayerGui
+			warn("AUTO SCRIPT: queue_on_teleport not available in this environment. Auto-run won't persist across teleport.")
+			pcall(function()
+				local pg = player:FindFirstChild("PlayerGui")
+				if pg then
+					local notice = Instance.new("TextLabel")
+					notice.Size = UDim2.new(0,420,0,40)
+					notice.Position = UDim2.new(.5,-210,.85,0)
+					notice.BackgroundColor3 = Color3.fromRGB(40,40,40)
+					notice.TextColor3 = Color3.new(1,1,1)
+					notice.Font = Enum.Font.GothamBold
+					notice.TextSize = 18
+					notice.Text = "AUTO SCRIPT: not supported by executor. Turn on manually after teleport."
+					notice.Parent = pg
+					game:GetService("Debris"):AddItem(notice,6)
+				end
+			end)
+		end
+	end
+
+	-- teleport to chosen server
+	pcall(function()
+		TeleportService:TeleportToPlaceInstance(game.PlaceId, target, player)
+	end)
+end
+
+-- GUI
+local gui = Instance.new("ScreenGui")
+gui.ResetOnSpawn=false
+gui.Parent=player:WaitForChild("PlayerGui")
+
+local main=Instance.new("Frame",gui)
+main.Size=UDim2.new(0,700,0,420)
+main.Position=UDim2.new(.5,-350,.5,-210)
+main.BackgroundColor3=Color3.fromRGB(30,30,35)
+main.BorderSizePixel=0
+Instance.new("UICorner",main)
+
+-- HEADER
+local header=Instance.new("Frame",main)
+header.Size=UDim2.new(1,0,0,40)
+header.BackgroundColor3=ACCENT
+
+local title=Instance.new("TextLabel",header)
+title.Size=UDim2.new(1,0,1,0)
+title.BackgroundTransparency=1
+title.Text="BENJO SCRIPTS"
+title.Font=Enum.Font.GothamBold
+title.TextSize=18
+title.TextColor3=Color3.new(1,1,1)
+
+local devButton = Instance.new("ImageButton")
+devButton.Size = UDim2.new(0,28,0,28)
+devButton.Position = UDim2.new(0,17,0,6)
+devButton.BackgroundTransparency = 1
+devButton.Image = "rbxassetid://86372372560089"
+devButton.Parent = header
+
+local minimize=Instance.new("TextButton",header)
+minimize.Size=UDim2.new(0,40,0,25)
+minimize.Position=UDim2.new(1,-45,0,7)
+minimize.Text="-"
+minimize.Font=Enum.Font.GothamBold
+minimize.TextSize=20
+minimize.BackgroundColor3=Color3.new(1,1,1)
+minimize.TextColor3=ACCENT
+Instance.new("UICorner",minimize)
+
+-- TABS
+local tabs=Instance.new("Frame",main)
+tabs.Size=UDim2.new(0,180,1,-40)
+tabs.Position=UDim2.new(0,0,0,40)
+tabs.BackgroundColor3=Color3.fromRGB(22,22,26)
+
+local list=Instance.new("UIListLayout",tabs)
+list.Padding=UDim.new(0,12)
+list.HorizontalAlignment=Enum.HorizontalAlignment.Center
+
+local pad=Instance.new("UIPadding",tabs)
+pad.PaddingTop=UDim.new(0,20)
+
+local function makeTab(name,order)
+	local b=Instance.new("TextButton")
+	b.Size=UDim2.new(1,-20,0,44)
+	b.BackgroundColor3=Color3.fromRGB(40,40,46)
+	b.TextColor3=Color3.fromRGB(230,230,230)
+	b.Text=name
+	b.Font=Enum.Font.Gotham
+	b.TextSize=16
+	b.LayoutOrder=order
+	b.Parent=tabs
+	Instance.new("UICorner",b)
+	return b
+end
+
+local tabHome=makeTab("Home",1)
+local tabOutlaw=makeTab("Outlaw",2)
+local tabPolice=makeTab("Police",3)
+local tabFinder=makeTab("Finder",4)
+local tabReconnect=makeTab("Reconnect",5)
+
+-- CONTENT
+local content=Instance.new("Frame",main)
+content.Size=UDim2.new(1,-180,1,-40)
+content.Position=UDim2.new(0,180,0,40)
+content.BackgroundColor3=Color3.fromRGB(45,45,50)
+
+local function clear()
+	for _,v in ipairs(content:GetChildren()) do
+		v:Destroy()
+	end
+end
+
+-- HOME
+local function showHome()
+	clear()
+
+	local container=Instance.new("Frame",content)
+	container.Size=UDim2.new(1,0,1,0)
+	container.BackgroundTransparency=1
+
+	local layout=Instance.new("UIListLayout",container)
+	layout.HorizontalAlignment=Enum.HorizontalAlignment.Center
+	layout.VerticalAlignment=Enum.VerticalAlignment.Center
+	layout.Padding=UDim.new(0,10)
+
+	local img=Players:GetUserThumbnailAsync(player.UserId,Enum.ThumbnailType.HeadShot,Enum.ThumbnailSize.Size180x180)
+
+	local avatar=Instance.new("ImageLabel",container)
+	avatar.Size=UDim2.new(0,120,0,120)
+	avatar.BackgroundTransparency=1
+	avatar.Image=img
+	local c=Instance.new("UICorner",avatar)
+	c.CornerRadius=UDim.new(1,0)
+
+	local welcome=Instance.new("TextLabel",container)
+	welcome.Size=UDim2.new(0,400,0,70)
+	welcome.BackgroundTransparency=1
+	welcome.Font=Enum.Font.GothamBold
+	welcome.TextSize=28
+	welcome.RichText=true
+	welcome.TextColor3=Color3.new(1,1,1)
+	welcome.TextXAlignment=Enum.TextXAlignment.Center
+	welcome.Text="WELCOME BACK,\n<font color='rgb(255,0,0)'>"..string.upper(player.Name).."</font>"
+end
+
+-- OUTLAW
+local function showOutlaw()
+	clear()
+
+	local label=Instance.new("TextLabel",content)
+	label.Size=UDim2.new(1,0,0,60)
+	label.Position=UDim2.new(0,0,0,40)
+	label.BackgroundTransparency=1
+	label.Text="Outlaw tools coming soon..."
+	label.Font=Enum.Font.GothamBold
+	label.TextSize=26
+	label.TextColor3=Color3.new(1,1,1)
+	label.TextXAlignment=Enum.TextXAlignment.Center
+end
+
+-- POLICE (with buttons stacked and centered; Become Police above Police Action)
+local function showPolice()
+	clear()
+
+	local container=Instance.new("Frame",content)
+	container.Size=UDim2.new(1,0,1,0)
+	container.BackgroundTransparency=1
+
+	local layout=Instance.new("UIListLayout",container)
+	layout.HorizontalAlignment=Enum.HorizontalAlignment.Center
+	layout.VerticalAlignment=Enum.VerticalAlignment.Center
+	layout.Padding=UDim.new(0,20)
+
+	local btn2=Instance.new("TextButton",container)
+	btn2.Size=UDim2.new(0,250,0,60)
+	btn2.Text="Become Police"
+	btn2.Font=Enum.Font.GothamBold
+	btn2.TextSize=20
+	btn2.BackgroundColor3=Color3.fromRGB(70,130,255)
+	btn2.TextColor3=Color3.new(1,1,1)
+
+	local corner2=Instance.new("UICorner",btn2)
+	corner2.CornerRadius=UDim.new(0,8)
+
+	btn2.MouseButton1Click:Connect(function()
+		for _, pl in pairs(Players:GetPlayers()) do
+			local args = {
+				[1] = "Security",
+				[2] = "jobPad"
+			}
+			pcall(function()
+				game:GetService("ReplicatedStorage").Remotes.RequestStartJobSession:FireServer(unpack(args))
+			end)
+		end
+	end)
+
+	local btn=Instance.new("TextButton",container)
+	btn.Size=UDim2.new(0,250,0,60)
+	btn.Text="Police Action"
+	btn.Font=Enum.Font.GothamBold
+	btn.TextSize=20
+	btn.BackgroundColor3=Color3.fromRGB(70,130,255)
+	btn.TextColor3=Color3.new(1,1,1)
+
+	local corner=Instance.new("UICorner",btn)
+	corner.CornerRadius=UDim.new(0,8)
+
+	btn.MouseButton1Click:Connect(function()
+		for _, pl in pairs(Players:GetPlayers()) do
+			pcall(function()
+				game:GetService("ReplicatedStorage").Remotes.RequestArrestCriminal:FireServer(pl)
+			end)
+		end
+	end)
+end
+
+-- FINDER
+local function showFinder()
+	clear()
+
+	local container=Instance.new("Frame",content)
+	container.Size=UDim2.new(1,0,1,0)
+	container.BackgroundTransparency=1
+
+	local layout=Instance.new("UIListLayout",container)
+	layout.HorizontalAlignment=Enum.HorizontalAlignment.Center
+	layout.VerticalAlignment=Enum.VerticalAlignment.Center
+	layout.Padding=UDim.new(0,20)
+
+	local findBtn=Instance.new("TextButton",container)
+	findBtn.Size=UDim2.new(0,260,0,60)
+	findBtn.Text="FIND SERVER"
+	findBtn.Font=Enum.Font.GothamBold
+	findBtn.TextSize=22
+	findBtn.BackgroundColor3=Color3.fromRGB(70,130,255)
+	findBtn.TextColor3=Color3.new(1,1,1)
+	local c1=Instance.new("UICorner",findBtn)
+
+	local infoLabel = Instance.new("TextLabel",container)
+	infoLabel.Size = UDim2.new(0,420,0,30)
+	infoLabel.BackgroundTransparency = 1
+	infoLabel.Font = Enum.Font.Gotham
+	infoLabel.TextSize = 16
+	infoLabel.TextColor3 = Color3.new(1,1,1)
+	infoLabel.Text = "Finds another server and teleports you there."
+
+	findBtn.MouseButton1Click:Connect(function()
+		infoLabel.Text = "Searching for server..."
+		task.spawn(function()
+			findServer()
+		end)
+	end)
+
+	local autoBtn=Instance.new("TextButton",container)
+	autoBtn.Size=UDim2.new(0,260,0,50)
+	autoBtn.Text="AUTO SCRIPT: OFF"
+	autoBtn.Font=Enum.Font.GothamBold
+	autoBtn.TextSize=18
+	autoBtn.BackgroundColor3=Color3.fromRGB(66,133,244)
+	autoBtn.TextColor3=Color3.new(1,1,1)
+	local c2=Instance.new("UICorner",autoBtn)
+
+	autoBtn.MouseButton1Click:Connect(function()
+		autoScript = not autoScript
+		autoBtn.Text = autoScript and "AUTO SCRIPT: ON" or "AUTO SCRIPT: OFF"
+	end)
+
+	-- small note about persistence
+	local note = Instance.new("TextLabel",container)
+	note.Size = UDim2.new(0,420,0,30)
+	note.BackgroundTransparency = 1
+	note.Font = Enum.Font.Gotham
+	note.TextSize = 14
+	note.TextColor3 = Color3.new(1,1,1)
+	note.Text = "Note: Auto-run requires executor support (e.g., syn.queue_on_teleport)."
+end
+
+-- RECONNECT (FULL WINDOW STYLE)
+local autoReconnect=false
+
+local function showReconnect()
+	clear()
+
+	local container=Instance.new("Frame",content)
+	container.Size=UDim2.new(1,0,1,0)
+	container.BackgroundTransparency=1
+
+	local layout=Instance.new("UIListLayout",container)
+	layout.HorizontalAlignment=Enum.HorizontalAlignment.Center
+	layout.VerticalAlignment=Enum.VerticalAlignment.Center
+	layout.Padding=UDim.new(0,20)
+
+	local reconnectBtn=Instance.new("TextButton",container)
+	reconnectBtn.Size=UDim2.new(0.7,0,0,70)
+	reconnectBtn.Text="RECONNECT"
+	reconnectBtn.Font=Enum.Font.GothamBold
+	reconnectBtn.TextSize=28
+	reconnectBtn.BackgroundColor3=Color3.fromRGB(80,80,90)
+	reconnectBtn.TextColor3=Color3.new(1,1,1)
+
+	local corner=Instance.new("UICorner",reconnectBtn)
+	corner.CornerRadius=UDim.new(0,10)
+
+	reconnectBtn.MouseButton1Click:Connect(function()
+		reconnect()
+	end)
+
+	local auto=Instance.new("TextButton",container)
+	auto.Size=UDim2.new(0.7,0,0,50)
+	auto.Text="AUTO RECONNECT: OFF"
+	auto.Font=Enum.Font.GothamBold
+	auto.TextSize=18
+	auto.BackgroundColor3=Color3.fromRGB(66,133,244)
+	auto.TextColor3=Color3.new(1,1,1)
+
+	local c2=Instance.new("UICorner",auto)
+
+	auto.MouseButton1Click:Connect(function()
+		autoReconnect=not autoReconnect
+		auto.Text=autoReconnect and "AUTO RECONNECT: ON" or "AUTO RECONNECT: OFF"
+	end)
+end
+
+-- TAB CONNECTIONS
+tabHome.MouseButton1Click:Connect(showHome)
+tabOutlaw.MouseButton1Click:Connect(showOutlaw)
+tabPolice.MouseButton1Click:Connect(showPolice)
+tabFinder.MouseButton1Click:Connect(showFinder)
+tabReconnect.MouseButton1Click:Connect(showReconnect)
+
+showHome()
+
+-- DRAG
+local dragging=false
+local dragInput
+local dragStart
+local startPos
+
+header.InputBegan:Connect(function(input)
+	if input.UserInputType==Enum.UserInputType.MouseButton1 then
+		dragging=true
+		dragStart=input.Position
+		startPos=main.Position
+
+		input.Changed:Connect(function()
+			if input.UserInputState==Enum.UserInputState.End then
+				dragging=false
+			end
+		end)
+	end
+end)
+
+header.InputChanged:Connect(function(input)
+	if input.UserInputType==Enum.UserInputType.MouseMovement then
+		dragInput=input
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if dragging and input==dragInput then
+		local delta=input.Position-dragStart
+
+		main.Position=UDim2.new(
+			startPos.X.Scale,
+			startPos.X.Offset+delta.X,
+			startPos.Y.Scale,
+			startPos.Y.Offset+delta.Y
+		)
+	end
+end)
+
+-- MINIMIZE
+local minimized=false
+local oldSize=main.Size
+
+minimize.MouseButton1Click:Connect(function()
+	if not minimized then
+
+		oldSize=main.Size
+		main.Size=UDim2.new(0,300,0,40)
+		tabs.Visible=false
+		content.Visible=false
+		minimized=true
+	else
+
+		main.Size=oldSize
+		tabs.Visible=true
+		content.Visible=true
+		minimized=false
+	end
+end)
