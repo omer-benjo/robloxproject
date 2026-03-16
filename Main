@@ -158,10 +158,37 @@ end
 local function showPolice()
 	clear()
 
-	local btn=Instance.new("TextButton",content)
+	local container=Instance.new("Frame",content)
+	container.Size=UDim2.new(1,0,1,0)
+	container.BackgroundTransparency=1
+
+	local layout=Instance.new("UIListLayout",container)
+	layout.HorizontalAlignment=Enum.HorizontalAlignment.Center
+	layout.VerticalAlignment=Enum.VerticalAlignment.Center
+	layout.Padding=UDim.new(0,20)
+
+	local btn2=Instance.new("TextButton",container)
+	btn2.Size=UDim2.new(0,250,0,60)
+	btn2.Text="Become Police"
+	btn2.Font=Enum.Font.GothamBold
+	btn2.TextSize=20
+	btn2.BackgroundColor3=Color3.fromRGB(70,130,255)
+	btn2.TextColor3=Color3.new(1,1,1)
+
+	local corner2=Instance.new("UICorner",btn2)
+	corner2.CornerRadius=UDim.new(0,8)
+
+	btn2.MouseButton1Click:Connect(function()
+		local args = {
+			[1] = "Security",
+			[2] = "jobPad"
+		}
+		game:GetService("ReplicatedStorage").Remotes.RequestStartJobSession:FireServer(unpack(args))
+	end)
+
+	local btn=Instance.new("TextButton",container)
 	btn.Size=UDim2.new(0,250,0,60)
-	btn.Position=UDim2.new(.5,-125,.4,0)
-	btn.Text="Police Action"
+	btn.Text="Arrest All Criminals"
 	btn.Font=Enum.Font.GothamBold
 	btn.TextSize=20
 	btn.BackgroundColor3=Color3.fromRGB(70,130,255)
