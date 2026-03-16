@@ -1,320 +1,295 @@
-local P=game:GetService("Players")
-local U=game:GetService("UserInputService")
+-- BENJO SCRIPTS (Styled Version)
 
-local p=P.LocalPlayer
-local c=p.Character or p.CharacterAdded:Wait()
-local r=c:WaitForChild("HumanoidRootPart")
-local h=c:WaitForChild("Humanoid")
+local Players = game:GetService("Players")
+local TeleportService = game:GetService("TeleportService")
+local UserInputService = game:GetService("UserInputService")
 
-p.CharacterAdded:Connect(function(nc)
-	c=nc
-	r=c:WaitForChild("HumanoidRootPart")
-	h=c:WaitForChild("Humanoid")
+local player = Players.LocalPlayer
+if not player then return end
+
+local ACCENT = Color3.fromRGB(66,133,244)
+
+-- RECONNECT
+local function reconnect()
+	pcall(function()
+		if game.JobId and game.JobId ~= "" then
+			TeleportService:TeleportToPlaceInstance(game.PlaceId,game.JobId,player)
+		else
+			TeleportService:Teleport(game.PlaceId,player)
+		end
+	end)
+end
+
+-- GUI
+local gui = Instance.new("ScreenGui")
+gui.ResetOnSpawn=false
+gui.Parent=player:WaitForChild("PlayerGui")
+
+local main=Instance.new("Frame",gui)
+main.Size=UDim2.new(0,700,0,420)
+main.Position=UDim2.new(.5,-350,.5,-210)
+main.BackgroundColor3=Color3.fromRGB(30,30,35)
+main.BorderSizePixel=0
+Instance.new("UICorner",main)
+
+-- HEADER
+local header=Instance.new("Frame",main)
+header.Size=UDim2.new(1,0,0,40)
+header.BackgroundColor3=ACCENT
+
+local title=Instance.new("TextLabel",header)
+title.Size=UDim2.new(1,0,1,0)
+title.BackgroundTransparency=1
+title.Text="BENJO SCRIPTS"
+title.Font=Enum.Font.GothamBold
+title.TextSize=18
+title.TextColor3=Color3.new(1,1,1)
+
+local devButton = Instance.new("ImageButton")
+devButton.Size = UDim2.new(0,28,0,28)
+devButton.Position = UDim2.new(0,17,0,6)
+devButton.BackgroundTransparency = 1
+devButton.Image = "rbxassetid://86372372560089"
+devButton.Parent = header
+
+local minimize=Instance.new("TextButton",header)
+minimize.Size=UDim2.new(0,40,0,25)
+minimize.Position=UDim2.new(1,-45,0,7)
+minimize.Text="-"
+minimize.Font=Enum.Font.GothamBold
+minimize.TextSize=20
+minimize.BackgroundColor3=Color3.new(1,1,1)
+minimize.TextColor3=ACCENT
+Instance.new("UICorner",minimize)
+
+-- TABS
+local tabs=Instance.new("Frame",main)
+tabs.Size=UDim2.new(0,180,1,-40)
+tabs.Position=UDim2.new(0,0,0,40)
+tabs.BackgroundColor3=Color3.fromRGB(22,22,26)
+
+local list=Instance.new("UIListLayout",tabs)
+list.Padding=UDim.new(0,12)
+list.HorizontalAlignment=Enum.HorizontalAlignment.Center
+
+local pad=Instance.new("UIPadding",tabs)
+pad.PaddingTop=UDim.new(0,20)
+
+local function makeTab(name,order)
+	local b=Instance.new("TextButton")
+	b.Size=UDim2.new(1,-20,0,44)
+	b.BackgroundColor3=Color3.fromRGB(40,40,46)
+	b.TextColor3=Color3.fromRGB(230,230,230)
+	b.Text=name
+	b.Font=Enum.Font.Gotham
+	b.TextSize=16
+	b.LayoutOrder=order
+	b.Parent=tabs
+	Instance.new("UICorner",b)
+	return b
+end
+
+local tabHome=makeTab("Home",1)
+local tabOutlaw=makeTab("Outlaw",2)
+local tabPolice=makeTab("Police",3)
+local tabReconnect=makeTab("Reconnect",4)
+
+-- CONTENT
+local content=Instance.new("Frame",main)
+content.Size=UDim2.new(1,-180,1,-40)
+content.Position=UDim2.new(0,180,0,40)
+content.BackgroundColor3=Color3.fromRGB(45,45,50)
+
+local function clear()
+	for _,v in ipairs(content:GetChildren()) do
+		v:Destroy()
+	end
+end
+
+-- HOME
+local function showHome()
+	clear()
+
+	local container=Instance.new("Frame",content)
+	container.Size=UDim2.new(1,0,1,0)
+	container.BackgroundTransparency=1
+
+	local layout=Instance.new("UIListLayout",container)
+	layout.HorizontalAlignment=Enum.HorizontalAlignment.Center
+	layout.VerticalAlignment=Enum.VerticalAlignment.Center
+	layout.Padding=UDim.new(0,10)
+
+	local img=Players:GetUserThumbnailAsync(player.UserId,Enum.ThumbnailType.HeadShot,Enum.ThumbnailSize.Size180x180)
+
+	local avatar=Instance.new("ImageLabel",container)
+	avatar.Size=UDim2.new(0,120,0,120)
+	avatar.BackgroundTransparency=1
+	avatar.Image=img
+	local c=Instance.new("UICorner",avatar)
+	c.CornerRadius=UDim.new(1,0)
+
+	local welcome=Instance.new("TextLabel",container)
+	welcome.Size=UDim2.new(0,400,0,70)
+	welcome.BackgroundTransparency=1
+	welcome.Font=Enum.Font.GothamBold
+	welcome.TextSize=28
+	welcome.RichText=true
+	welcome.TextColor3=Color3.new(1,1,1)
+	welcome.TextXAlignment=Enum.TextXAlignment.Center
+	welcome.Text="WELCOME BACK,\n<font color='rgb(255,0,0)'>"..string.upper(player.Name).."</font>"
+end
+
+-- OUTLAW
+local function showOutlaw()
+	clear()
+
+	local label=Instance.new("TextLabel",content)
+	label.Size=UDim2.new(1,0,0,60)
+	label.Position=UDim2.new(0,0,0,40)
+	label.BackgroundTransparency=1
+	label.Text="Outlaw tools coming soon..."
+	label.Font=Enum.Font.GothamBold
+	label.TextSize=26
+	label.TextColor3=Color3.new(1,1,1)
+	label.TextXAlignment=Enum.TextXAlignment.Center
+end
+
+-- POLICE
+local function showPolice()
+	clear()
+
+	local btn=Instance.new("TextButton",content)
+	btn.Size=UDim2.new(0,250,0,60)
+	btn.Position=UDim2.new(.5,-125,.4,0)
+	btn.Text="Police Action"
+	btn.Font=Enum.Font.GothamBold
+	btn.TextSize=20
+	btn.BackgroundColor3=Color3.fromRGB(70,130,255)
+	btn.TextColor3=Color3.new(1,1,1)
+
+	local corner=Instance.new("UICorner",btn)
+	corner.CornerRadius=UDim.new(0,8)
+
+	btn.MouseButton1Click:Connect(function()
+		for _, player in pairs(Players:GetPlayers()) do
+			local args = {
+				[1] = player
+			}
+			game:GetService("ReplicatedStorage").Remotes.RequestArrestCriminal:FireServer(unpack(args))
+		end
+	end)
+end
+
+-- RECONNECT (FULL WINDOW STYLE)
+local autoReconnect=false
+
+local function showReconnect()
+	clear()
+
+	local container=Instance.new("Frame",content)
+	container.Size=UDim2.new(1,0,1,0)
+	container.BackgroundTransparency=1
+
+	local layout=Instance.new("UIListLayout",container)
+	layout.HorizontalAlignment=Enum.HorizontalAlignment.Center
+	layout.VerticalAlignment=Enum.VerticalAlignment.Center
+	layout.Padding=UDim.new(0,20)
+
+	local reconnectBtn=Instance.new("TextButton",container)
+	reconnectBtn.Size=UDim2.new(0.7,0,0,70)
+	reconnectBtn.Text="RECONNECT"
+	reconnectBtn.Font=Enum.Font.GothamBold
+	reconnectBtn.TextSize=28
+	reconnectBtn.BackgroundColor3=Color3.fromRGB(80,80,90)
+	reconnectBtn.TextColor3=Color3.new(1,1,1)
+
+	local corner=Instance.new("UICorner",reconnectBtn)
+	corner.CornerRadius=UDim.new(0,10)
+
+	reconnectBtn.MouseButton1Click:Connect(function()
+		reconnect()
+	end)
+
+	local auto=Instance.new("TextButton",container)
+	auto.Size=UDim2.new(0.7,0,0,50)
+	auto.Text="AUTO RECONNECT: OFF"
+	auto.Font=Enum.Font.GothamBold
+	auto.TextSize=18
+	auto.BackgroundColor3=Color3.fromRGB(66,133,244)
+	auto.TextColor3=Color3.new(1,1,1)
+
+	local c2=Instance.new("UICorner",auto)
+
+	auto.MouseButton1Click:Connect(function()
+		autoReconnect=not autoReconnect
+		auto.Text=autoReconnect and "AUTO RECONNECT: ON" or "AUTO RECONNECT: OFF"
+	end)
+end
+
+-- TAB CONNECTIONS
+tabHome.MouseButton1Click:Connect(showHome)
+tabOutlaw.MouseButton1Click:Connect(showOutlaw)
+tabPolice.MouseButton1Click:Connect(showPolice)
+tabReconnect.MouseButton1Click:Connect(showReconnect)
+
+showHome()
+
+-- DRAG
+local dragging=false
+local dragInput
+local dragStart
+local startPos
+
+header.InputBegan:Connect(function(input)
+	if input.UserInputType==Enum.UserInputType.MouseButton1 then
+		dragging=true
+		dragStart=input.Position
+		startPos=main.Position
+
+		input.Changed:Connect(function()
+			if input.UserInputState==Enum.UserInputState.End then
+				dragging=false
+			end
+		end)
+	end
 end)
 
-local z=Vector3.new(-2543.30,14.81,4030.32)
-local rad=50
-
-local prot=false
-local fr=false
-local inf=false
-
-local g=Instance.new("ScreenGui",p.PlayerGui)
-g.ResetOnSpawn=false
-
-
-local f=Instance.new("Frame",g)
-f.Size=UDim2.new(0,420,0,370)
-f.Position=UDim2.new(.5,-210,.5,-185)
-f.BackgroundColor3=Color3.fromRGB(255,170,170)
-Instance.new("UICorner",f)
-
-
-local min=Instance.new("TextButton",f)
-min.Size=UDim2.new(0,30,0,30)
-min.Position=UDim2.new(1,-35,0,5)
-min.Text="-"
-min.BackgroundColor3=Color3.fromRGB(255,200,200)
-Instance.new("UICorner",min)
-
-
-local logo=Instance.new("TextButton",g)
-logo.Size=UDim2.new(0,60,0,60)
-logo.Position=UDim2.new(.5,-30,.8,0)
-logo.Text="GUI"
-logo.Visible=false
-logo.BackgroundColor3=Color3.fromRGB(255,170,170)
-Instance.new("UICorner",logo)
-
--- TITLE
-local t=Instance.new("TextLabel",f)
-t.Size=UDim2.new(1,0,0,35)
-t.BackgroundTransparency=1
-t.Text="Control Panel"
-t.Font=Enum.Font.GothamSemibold
-t.TextSize=18
-t.TextColor3=Color3.fromRGB(30,20,20)
-
--- USERNAME BOX
-local b=Instance.new("TextBox",f)
-b.Size=UDim2.new(0,300,0,45)
-b.Position=UDim2.new(.5,-150,0,70)
-b.PlaceholderText="Enter Username"
-b.Font=Enum.Font.Gotham
-b.TextSize=16
-b.BackgroundColor3=Color3.fromRGB(255,200,200)
-Instance.new("UICorner",b)
-
--- TELEPORT ONCE
-local tp=Instance.new("TextButton",f)
-tp.Size=UDim2.new(0,300,0,45)
-tp.Position=UDim2.new(.5,-150,0,200)
-tp.Text="Teleport Once"
-tp.Font=Enum.Font.Gotham
-tp.TextSize=16
-tp.BackgroundColor3=Color3.fromRGB(255,200,200)
-Instance.new("UICorner",tp)
-
--- INFINITE TELEPORT
-local it=Instance.new("TextButton",f)
-it.Size=UDim2.new(0,300,0,45)
-it.Position=UDim2.new(.5,-150,0,255)
-it.Text="Infinite Teleport: OFF"
-it.Font=Enum.Font.Gotham
-it.TextSize=16
-it.BackgroundColor3=Color3.fromRGB(255,200,200)
-Instance.new("UICorner",it)
-
--- PROTECTION
-local pr=Instance.new("TextButton",f)
-pr.Size=UDim2.new(0,300,0,45)
-pr.Position=UDim2.new(.5,-150,0,310)
-pr.Text="Protection: OFF"
-pr.Font=Enum.Font.Gotham
-pr.TextSize=16
-pr.BackgroundColor3=Color3.fromRGB(255,200,200)
-Instance.new("UICorner",pr)
-
--- DROPDOWN BUTTON
-local dp=Instance.new("TextButton",f)
-dp.Size=UDim2.new(0,300,0,35)
-dp.Position=UDim2.new(.5,-150,0,120)
-dp.Text="Choose Player ▼"
-dp.Font=Enum.Font.Gotham
-dp.TextSize=14
-dp.BackgroundColor3=Color3.fromRGB(255,200,200)
-Instance.new("UICorner",dp)
-
--- LIST
-local list=Instance.new("Frame",f)
-list.Size=UDim2.new(0,300,0,0)
-list.Position=UDim2.new(.5,-150,0,155)
-list.BackgroundColor3=Color3.fromRGB(255,210,210)
-list.ClipsDescendants=true
-Instance.new("UICorner",list)
-
-local layout=Instance.new("UIListLayout")
-layout.Parent=list
-layout.Padding=UDim.new(0,2)
-
-local open=false
-
--- FIND PLAYER
-local function gt(n)
-	n=n:lower()
-	for _,x in pairs(P:GetPlayers()) do
-		if x.Name:lower():sub(1,#n)==n then
-			return x
-		end
+header.InputChanged:Connect(function(input)
+	if input.UserInputType==Enum.UserInputType.MouseMovement then
+		dragInput=input
 	end
-end
+end)
 
--- PLAYER LIST
-local function refreshPlayers()
+UserInputService.InputChanged:Connect(function(input)
+	if dragging and input==dragInput then
+		local delta=input.Position-dragStart
 
-	for _,v in pairs(list:GetChildren()) do
-		if v:IsA("TextButton") then
-			v:Destroy()
-		end
-	end
-
-	local count=0
-
-	for _,plr in pairs(P:GetPlayers()) do
-		if plr~=p then
-
-			count+=1
-
-			local btn=Instance.new("TextButton")
-			btn.Parent=list
-			btn.Size=UDim2.new(1,0,0,30)
-			btn.Text=plr.Name
-			btn.Font=Enum.Font.Gotham
-			btn.TextSize=14
-			btn.BackgroundColor3=Color3.fromRGB(255,200,200)
-			Instance.new("UICorner",btn)
-
-			btn.MouseButton1Click:Connect(function()
-				b.Text=plr.Name
-				open=false
-				list:TweenSize(UDim2.new(0,300,0,0),"Out","Quad",0.2,true)
-			end)
-
-		end
-	end
-
-	list.Size=UDim2.new(0,300,0,count*32)
-
-end
-
--- OPEN / CLOSE LIST
-dp.MouseButton1Click:Connect(function()
-
-	open=not open
-
-	if open then
-
-		refreshPlayers()
-
-		list:TweenSize(
-			UDim2.new(0,300,0,#P:GetPlayers()*32),
-			"Out","Quad",0.2,true
+		main.Position=UDim2.new(
+			startPos.X.Scale,
+			startPos.X.Offset+delta.X,
+			startPos.Y.Scale,
+			startPos.Y.Offset+delta.Y
 		)
+	end
+end)
 
+-- MINIMIZE
+local minimized=false
+local oldSize=main.Size
+
+minimize.MouseButton1Click:Connect(function()
+	if not minimized then
+
+		oldSize=main.Size
+		main.Size=UDim2.new(0,300,0,40)
+		tabs.Visible=false
+		content.Visible=false
+		minimized=true
 	else
 
-		list:TweenSize(
-			UDim2.new(0,300,0,0),
-			"Out","Quad",0.2,true
-		)
-
-	end
-
-end)
-
--- AUTO UPDATE
-task.spawn(function()
-	while true do
-		if open then
-			refreshPlayers()
-		end
-		task.wait(0.5)
-	end
-end)
-
--- TELEPORT FUNCTION
-local function teleportTo(plr)
-
-	if not plr then return end
-
-	local char=plr.Character or plr.CharacterAdded:Wait()
-	local hrp=char:WaitForChild("HumanoidRootPart")
-
-	r.CFrame=hrp.CFrame*CFrame.new(0,0,-2)
-
-end
-
--- TELEPORT ONCE
-tp.MouseButton1Click:Connect(function()
-
-	local t=gt(b.Text)
-	teleportTo(t)
-
-end)
-
--- INFINITE TELEPORT
-it.MouseButton1Click:Connect(function()
-
-	inf=not inf
-	it.Text=inf and "Infinite Teleport: ON" or "Infinite Teleport: OFF"
-
-	if inf then
-
-		task.spawn(function()
-
-			while inf do
-
-				local t=gt(b.Text)
-				teleportTo(t)
-
-				task.wait(0.05)
-
-			end
-
-		end)
-
-	end
-
-end)
-
--- PROTECTION
-pr.MouseButton1Click:Connect(function()
-
-	prot=not prot
-	pr.Text=prot and "Protection: ON" or "Protection: OFF"
-
-end)
-
--- PROTECTION LOOP
-task.spawn(function()
-
-	while true do
-
-		if prot then
-
-			local m=(r.Position-z).Magnitude
-
-			if m<=rad then
-
-				if not fr then
-
-					fr=true
-					r.Anchored=true
-					h.WalkSpeed=0
-					r.CFrame=r.CFrame-Vector3.new(0,200,0)
-
-				end
-
-			else
-
-				if fr then
-
-					fr=false
-					r.Anchored=false
-					h.WalkSpeed=16
-
-				end
-
-			end
-
-		end
-
-		task.wait(.02)
-
-	end
-end)
-
--- MINIMIZE FUNCTION
-min.MouseButton1Click:Connect(function()
-	f.Visible=false
-	logo.Visible=true
-end)
-
-logo.MouseButton1Click:Connect(function()
-	f.Visible=true
-	logo.Visible=false
-end)
-
--- F5 TOGGLE
-U.InputBegan:Connect(function(i,gp)
-
-	if gp then return end
-
-	if i.KeyCode==Enum.KeyCode.F5 then
-
-		local v=not f.Visible
-		f.Visible=v
-		logo.Visible=not v
-
+		main.Size=oldSize
+		tabs.Visible=true
+		content.Visible=true
+		minimized=false
 	end
 end)
